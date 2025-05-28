@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "INtera",
+  title: "Intera",
   description: "Gestion de Chat, redes sociales",
 };
 
