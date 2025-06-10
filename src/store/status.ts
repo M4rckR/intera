@@ -109,7 +109,8 @@ export const useStatusStore = create<StatusState>()(
           'connectSocket:start'
         );
         
-        const socketInstance = io("http://54.172.153.21:4000", {
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://54.172.153.21:4000";
+        const socketInstance = io(socketUrl, {
           reconnection: true,
           reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
           reconnectionDelay: 1000,

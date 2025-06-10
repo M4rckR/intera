@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "app/**/*": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+} 

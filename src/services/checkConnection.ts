@@ -1,7 +1,9 @@
 import { checkConnectionSchema } from "@/schemas/checkConnection";
 import axios from "axios";
 
-const urlCheckConnection = "http://54.172.153.21:3001/api/whatsapp/status";
+const urlCheckConnection = process.env.NEXT_PUBLIC_API_URL 
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/status`
+  : "http://54.172.153.21:4000/api/whatsapp/status";
 
 export const fetchConnection = async () => {
     try {
