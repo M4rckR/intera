@@ -109,7 +109,7 @@ export const useStatusStore = create<StatusState>()(
           'connectSocket:start'
         );
         
-        const socketInstance = io("https://backend-chat-bot-41yg.onrender.com/", {
+        const socketInstance = io("http://54.172.153.21:4000", {
           reconnection: true,
           reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
           reconnectionDelay: 1000,

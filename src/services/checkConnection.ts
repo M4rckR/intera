@@ -1,7 +1,7 @@
 import { checkConnectionSchema } from "@/schemas/checkConnection";
 import axios from "axios";
 
-const urlCheckConnection = "https://chatbot-api-3o54.onrender.com/api/whatsapp/status";
+const urlCheckConnection = "http://54.172.153.21:3001/api/whatsapp/status";
 
 export const fetchConnection = async () => {
     try {
