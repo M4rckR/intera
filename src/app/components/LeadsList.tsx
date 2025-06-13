@@ -1,5 +1,5 @@
 import { useStatusStore } from "@/store/status";
-import { Lead } from "@/types";
+import { Lead } from "@/types/dataLeads";
 import { useEffect } from "react";
 
 export const LeadsList = () => {

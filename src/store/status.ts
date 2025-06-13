@@ -1,4 +1,5 @@
-import { DataConnection, Lead, Stats, LeadFromBackend } from "@/types";
+import { Lead, Stats, LeadFromBackend } from "@/types/dataLeads";
+import { DataConnection } from "@/types/dataConnection";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { io, Socket } from "socket.io-client";
@@ -14,8 +15,8 @@ const convertBackendLeadToFrontend = (backendLead: LeadFromBackend): Lead => {
   return {
     id: backendLead.id,
     phone: backendLead.phone,
-    created_at: backendLead.created_at,
-    updated_at: backendLead.updated_at,
+    createdAt: backendLead.createdAt,
+    updatedAt: backendLead.updatedAt,
     conversationState: {
       patientInfo: {
         name: backendLead.name,
@@ -23,12 +24,12 @@ const convertBackendLeadToFrontend = (backendLead: LeadFromBackend): Lead => {
       },
       appointmentInfo: {
         location: backendLead.sede,
-        date: backendLead.fecha_cita,
-        time: backendLead.hora_cita
+        date: backendLead.fechaCita,
+        time: backendLead.horaCita
       }
     },
     botState: {
-      is_bot_active: backendLead.is_bot_active
+      isBotActive: backendLead.isBotActive
     }
   };
 };

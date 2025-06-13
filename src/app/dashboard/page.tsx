@@ -1,18 +1,18 @@
-'use client'
-// import { DashNumbers } from "@/components/DashNumbers";
-import { LeadsList } from "@/components/LeadsList";
-import { Navbar } from "@/components/Navbar";
-import { SocialMenu } from "@/components/SocialMenu";
-import { WelcomeInsalud } from "@/components/Welcome/WelcomeInsalud";
-import { useStatusStore } from "@/store/status";
+"use client"
 import { useEffect } from "react";
+import { LeadsList } from "../components/LeadsList";
+import { Navbar } from "../components/Navbar";
+import { SocialMenu } from "../components/SocialMenu";
+import { WelcomeInsalud } from "../components/Welcome/WelcomeInsalud";
+import { useStatusStore } from "@/store/status";
 
-export default function Home() {
+export default function DashboardPage() {
   const isLoading = useStatusStore(state => state.isLoading);
   const timeoutReached = useStatusStore(state => state.timeoutReached);
   const connectSocket = useStatusStore(state => state.connectSocket);
   const disconnectSocket = useStatusStore(state => state.disconnectSocket);
   const lastUpdate = useStatusStore(state => state.lastUpdate);
+
 
   useEffect(() => {
     connectSocket();
