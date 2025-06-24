@@ -93,19 +93,19 @@ export const LeadsList = () => {
                     <input
                       type="checkbox"
                       className="sr-only peer"
-                      checked={lead.botState?.is_bot_active || false}
-                      onChange={() => handleBotStatusChange(lead.id, lead.botState?.is_bot_active || false)}
+                      checked={lead.botState?.isBotActive || false}
+                      onChange={() => handleBotStatusChange(lead.id, lead.botState?.isBotActive || false)}
                     />
                     <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
                   <span className="text-xs text-gray-300">
-                    {lead.botState?.is_bot_active ? '🟢 Activo' : '🔴 Inactivo'}
+                    {lead.botState?.isBotActive ? '🟢 Activo' : '🔴 Inactivo'}
                   </span>
                 </div>
               </div>
               
               <div className="border-t border-gray-600 pt-2 text-xs text-gray-500">
-                <p>Última actualización: {new Date(lead.updated_at).toLocaleString()}</p>
+                <p>Última actualización: {new Date(lead.updatedAt).toLocaleString()}</p>
               </div>
             </div>
           );
