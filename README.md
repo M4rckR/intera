@@ -104,7 +104,7 @@ El estado de la aplicación se maneja con Zustand y incluye:
 - `ping`: Mantiene la conexión activa
 
 ### Servidor → Cliente
-- `whatsapp-status`: Estado de conexión de WhatsApp
+- `whatsappStatus`: Estado de conexión de WhatsApp
 - `leads-data`: Actualizaciones de leads
 - `stats-data`: Estadísticas actualizadas
 

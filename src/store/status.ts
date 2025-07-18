@@ -168,7 +168,7 @@ export const useStatusStore = create<StatusState>()(
         });
 
         // Evento para el estado de WhatsApp
-        socketInstance.on("whatsapp-status", (data) => {
+        socketInstance.on("whatsappStatus", (data) => {
           console.log('📱 WhatsApp status actualizado:', data);
           const now = Date.now();
           set(
@@ -179,7 +179,7 @@ export const useStatusStore = create<StatusState>()(
               lastUpdate: now
             },
             false,
-            'whatsapp-status:update'
+            'whatsappStatus:update'
           );
         });
 
