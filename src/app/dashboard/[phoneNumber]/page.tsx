@@ -54,7 +54,7 @@ export default function DashboardPhonePage() {
         showBackHome={true}
         onBackHome={() => router.push('/home')}
       />
-      <div className="p-8">
+      <div className="px-4 container mx-auto max-w-7xl">
         <h1 className="text-3xl font-bold mb-2 text-gray-800">Dashboard de {phoneNumber}</h1>
         <p className="text-gray-500 mb-8">Gestiona los leads de este número en tiempo real.</p>
         <LeadsTable leads={leads} />
