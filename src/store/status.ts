@@ -185,12 +185,9 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento para los datos de leads
         socketInstance.on("leads-data", (backendLeads: LeadFromBackend[]) => {
-          console.log('📋 Datos originales del backend:', backendLeads);
           
           // Convertir los datos aplanados a estructura anidada
           const convertedLeads = backendLeads.map(convertBackendLeadToFrontend);
-          
-          console.log('📋✅ Leads convertidos para frontend:', convertedLeads);
           
           set(
             { 

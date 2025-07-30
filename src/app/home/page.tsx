@@ -1,8 +1,6 @@
 'use client'
 import { useAuthStore } from '@/store/auth';
 import { useEffect, useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import Image from 'next/image';
 import { io } from 'socket.io-client';
 import { checkConnectionSchema } from '@/schemas/checkConnection';
 import { useRouter } from 'next/navigation';
@@ -29,7 +27,6 @@ export default function HomePage() {
       user.phones.forEach((phone) => {
         const eventName = `whatsappStatus_${phone.number}`;
         const statusListener = (data: any) => {
-          console.log('FRONTEND: Recibido whatsappStatus para', phone.number, data);
           const parsed = checkConnectionSchema.safeParse(data);
           if (parsed.success) {
             setConnectionStatus((prev) => ({ ...prev, [phone.number]: parsed.data.isReady }));

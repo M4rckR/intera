@@ -8,15 +8,22 @@ import { useAuthStore } from '@/store/auth';
 
 const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000');
 
+interface Procedure {
+  name: string;
+  precio: string;
+  state: string;
+}
+
 interface Lead {
   id: string;
+  clientPhone: string;
   phone: string;
   name: string;
   district: string;
   sede: string;
   date: string;
   time: string;
-  procedures: Array<string>;
+  procedures: Procedure[];
   isBotActive: boolean;
 }
 
@@ -30,14 +37,12 @@ export default function DashboardPhonePage() {
 
   useEffect(() => {
     if (!phoneNumber) return;
-    console.log('FRONTEND: Solicitando leads para', phoneNumber);
     socket.emit('getLeads', { phoneNumber });
   }, [phoneNumber]);
 
   useEffect(() => {
     const handleLeads = (leadsData: Lead[]) => {
-      console.log('FRONTEND: Recibido leadsData', leadsData);
-      const filteredLeads = leadsData.filter(lead => lead.phone === phoneNumber);
+      const filteredLeads = leadsData.filter(lead => lead.clientPhone === phoneNumber);
       setLeads(filteredLeads);
     };
     socket.on('leadsData', handleLeads);
