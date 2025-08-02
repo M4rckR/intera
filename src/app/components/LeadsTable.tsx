@@ -132,8 +132,8 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                 <TableCaption className="sr-only">Lista de leads del día</TableCaption>
                 <TableHeader>
                   <TableRow className="border-gray-200">
-                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Paciente</TableHead>
-                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Distrito</TableHead>
+                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Nombre Paciente</TableHead>
+                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Informmación Paciente</TableHead>
                     <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Procedimiento</TableHead>
                     {canManageBots && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Bot activo</TableHead>}
                     {canSeeActions && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Acciones</TableHead>}
@@ -154,7 +154,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <Badge variant="outline" style={{ color: COLOR_AZUL_OSCURO, backgroundColor: '#e0f7fa', borderColor: '#b2ebf2' }} className="font-medium">
-                            {lead.district}
+                            Distrito: {lead.district}
                           </Badge>
                           {lead.sede && lead.sede !== "N/A" && (
                             <div className="text-sm text-gray-500">Sede: {lead.sede}</div>
@@ -162,10 +162,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                           {/* Fecha y hora en la columna distrito para compactar */}
                           <div className="text-xs text-gray-400 space-y-0.5">
                             {lead.date && lead.date !== "N/A" && (
-                              <div>📅 {formatDate(lead.date)}</div>
+                              <div>📅 Fecha: {formatDate(lead.date)}</div>
                             )}
                             {lead.time && lead.time !== "N/A" && (
-                              <div>🕐 {formatTime(lead.time)}</div>
+                              <div>🕐 Hora: {formatTime(lead.time)}</div>
                             )}
                           </div>
                         </div>
@@ -204,7 +204,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                               </div>
                             ))
                           ) : (
-                            <span className="text-sm text-gray-400">[object Object]</span>
+                            <span className="text-sm text-gray-400">No hay procedimientos solicitados</span>
                           )}
                         </div>
                       </TableCell>

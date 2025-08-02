@@ -8,13 +8,13 @@ import { useAuthStore } from '@/store/auth';
 
 const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000');
 
-interface Procedure {
+type Procedure = {
   name: string;
   precio: string;
   state: string;
 }
 
-interface Lead {
+type Lead = {
   id: string;
   clientPhone: string;
   phone: string;
