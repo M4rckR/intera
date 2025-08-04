@@ -162,10 +162,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                           {/* Fecha y hora en la columna distrito para compactar */}
                           <div className="text-xs text-gray-400 space-y-0.5">
                             {lead.date && lead.date !== "N/A" && (
-                              <div>📅 Fecha: {formatDate(lead.date)}</div>
+                              <div>📅 Fecha: {lead.date}</div>
                             )}
                             {lead.time && lead.time !== "N/A" && (
-                              <div>🕐 Hora: {formatTime(lead.time)}</div>
+                              <div>🕐 Hora: {lead.time}</div>
                             )}
                           </div>
                         </div>
