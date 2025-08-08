@@ -33,7 +33,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({ id: leadId, is_bot_active: newStatus }),
-      });
+      }); 
       // El backend emitirá 'leadsData' actualizado por socket automáticamente
     } catch (error) {
       console.error('Error updating bot status:', error);
