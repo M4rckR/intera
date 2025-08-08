@@ -33,7 +33,7 @@ export default function AdminPage() {
     const fetchManagers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://54.172.153.21:4000/api/admin/getManagers', {
+        const response = await fetch('https://callhub.insalud.pe/api/admin/getManagers', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',

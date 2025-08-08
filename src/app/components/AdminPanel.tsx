@@ -25,7 +25,7 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       setUpdatingManager(managerId);
       console.log(`Actualizando recontact para manager ${managerId} a ${newStatus}`);
       
-      const response = await fetch('http://54.172.153.21:4000/api/admin/desactiveRecontact', {
+      const response = await fetch('https://callhub.insalud.pe/api/admin/desactiveRecontact', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -64,7 +64,7 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       setUpdatingManager(managerId);
       console.log(`Actualizando reminder para manager ${managerId} a ${newStatus}`);
       
-      const response = await fetch('http://54.172.153.21:4000/api/admin/desactiveReminder', {
+      const response = await fetch('https://callhub.insalud.pe/api/admin/desactiveReminder', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

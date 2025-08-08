@@ -178,7 +178,7 @@ export default function HomePage() {
     
     try {
       // Usar el endpoint correcto que SÍ está implementado en el backend
-      const response = await fetch('http://54.172.153.21:4000/api/botstatus/reconnect', {
+      const response = await fetch('https://callhub.insalud.pe/api/botstatus/reconnect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
