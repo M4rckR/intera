@@ -254,4 +254,4 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       </div>
     </Tooltip.Provider>
   );
-} 
+}
