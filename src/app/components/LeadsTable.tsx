@@ -9,31 +9,10 @@ import { MessageSquareReply, BellRing, User} from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as Tooltip from '@radix-ui/react-tooltip';
 
-interface Procedure {
-  name: string;
-  precio: string;
-  state: string;
-}
-
-interface Lead {
-  id: string;
-  clientPhone: string;
-  phone: string;
-  name: string;
-  district: string;
-  sede: string;
-  date: string;
-  time: string;
-  procedures: Procedure[];
-  isBotActive: boolean;
-}
-
-interface LeadsTableProps {
-  leads: Lead[];
-}
+import { LeadsTableProps } from '@/types/components';
 
 // Paleta de colores del logo
-const COLOR_TURQUESA = '#2cccb1ff';
+const COLOR_TURQUESA = '#00CFC3';
 const COLOR_AZUL_OSCURO = '#00405A';
 
 export function LeadsTable({ leads }: LeadsTableProps) {
@@ -41,17 +20,18 @@ export function LeadsTable({ leads }: LeadsTableProps) {
   const roles = user?.roles || {};
   const canManageBots = roles.isAdmin || roles.isAdminBot;
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
+  console.log(leads);
 
-  const handleToggleBot = async (phoneNumber: string, userPhone : string , newStatus: boolean) => {
+  const handleToggleBot = async (leadId: string, newStatus: boolean) => {
     try {
       // Lógica para actualizar el estado del bot por HTTP POST
-      await fetch('http://localhost:4000/api/leads/update-bot-status', {
+      await fetch('/api/leads/update-bot-status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ phoneNumber: phoneNumber, userPhone: userPhone, is_bot_active: newStatus }),
+        body: JSON.stringify({ id: leadId, is_bot_active: newStatus }),
       });
       // El backend emitirá 'leadsData' actualizado por socket automáticamente
     } catch (error) {
@@ -69,11 +49,13 @@ export function LeadsTable({ leads }: LeadsTableProps) {
 
   const getStateColor = (state: string) => {
     switch (state.toLowerCase()) {
-      case 'ACCEPTED':
+      case 'confirmado':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'CANCELLED':
+      case 'pendiente':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'evaluación':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'REQUESTED':
+      case 'requested':
         return `bg-[${COLOR_TURQUESA}] text-white border-[${COLOR_TURQUESA}]`;
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -132,8 +114,8 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                 <TableCaption className="sr-only">Lista de leads del día</TableCaption>
                 <TableHeader>
                   <TableRow className="border-gray-200">
-                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Nombre Paciente</TableHead>
-                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Informmación Paciente</TableHead>
+                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Paciente</TableHead>
+                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Distrito</TableHead>
                     <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Procedimiento</TableHead>
                     {canManageBots && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Bot activo</TableHead>}
                     {canSeeActions && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Acciones</TableHead>}
@@ -154,7 +136,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <Badge variant="outline" style={{ color: COLOR_AZUL_OSCURO, backgroundColor: '#e0f7fa', borderColor: '#b2ebf2' }} className="font-medium">
-                            Distrito: {lead.district}
+                            {lead.district}
                           </Badge>
                           {lead.sede && lead.sede !== "N/A" && (
                             <div className="text-sm text-gray-500">Sede: {lead.sede}</div>
@@ -162,10 +144,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                           {/* Fecha y hora en la columna distrito para compactar */}
                           <div className="text-xs text-gray-400 space-y-0.5">
                             {lead.date && lead.date !== "N/A" && (
-                              <div>📅 Fecha: {lead.date}</div>
+                              <div>📅 {formatDate(lead.date)}</div>
                             )}
                             {lead.time && lead.time !== "N/A" && (
-                              <div>🕐 Hora: {lead.time}</div>
+                              <div>🕐 {formatTime(lead.time)}</div>
                             )}
                           </div>
                         </div>
@@ -204,7 +186,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                               </div>
                             ))
                           ) : (
-                            <span className="text-sm text-gray-400">No hay procedimientos solicitados</span>
+                            <span className="text-sm text-gray-400">[object Object]</span>
                           )}
                         </div>
                       </TableCell>
@@ -218,7 +200,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                 <span>
                                   <Switch
                                     checked={lead.isBotActive}
-                                    onCheckedChange={(newStatus) => handleToggleBot(lead.clientPhone, lead.phone, newStatus)}
+                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus)}
                                     className={cn(
                                       "w-12 h-7 border-2 transition-all duration-200",
                                       lead.isBotActive ? '' : ''

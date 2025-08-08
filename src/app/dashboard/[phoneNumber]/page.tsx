@@ -5,32 +5,14 @@ import { io } from 'socket.io-client';
 import { LeadsTable } from '@/app/components/LeadsTable';
 import { Header } from '@/app/components/Header';
 import { useAuthStore } from '@/store/auth';
+import { LeadTable } from '@/types/components';
 
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000');
-
-type Procedure = {
-  name: string;
-  precio: string;
-  state: string;
-}
-
-type Lead = {
-  id: string;
-  clientPhone: string;
-  phone: string;
-  name: string;
-  district: string;
-  sede: string;
-  date: string;
-  time: string;
-  procedures: Procedure[];
-  isBotActive: boolean;
-}
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://54.172.153.21:4000');
 
 export default function DashboardPhonePage() {
   const params = useParams();
   const phoneNumber = params?.phoneNumber as string;
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<LeadTable[]>([]);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
@@ -41,7 +23,7 @@ export default function DashboardPhonePage() {
   }, [phoneNumber]);
 
   useEffect(() => {
-    const handleLeads = (leadsData: Lead[]) => {
+    const handleLeads = (leadsData: LeadTable[]) => {
       const filteredLeads = leadsData.filter(lead => lead.clientPhone === phoneNumber);
       setLeads(filteredLeads);
     };

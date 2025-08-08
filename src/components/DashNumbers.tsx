@@ -11,7 +11,7 @@ export const DashNumbers = () => {
 
   useEffect(() => {
     connectSocket();
-  }, []);
+  }, [connectSocket]);
 
 
   return (
