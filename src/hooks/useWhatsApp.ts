@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketManager } from '@/lib/socket';
 import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 import { WhatsAppState, UseWhatsAppReturn, WhatsAppStatusData } from '@/types/whatsapp';
+import { Socket } from 'socket.io-client';
 
 export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
   const [state, setState] = useState<WhatsAppState>({
@@ -15,7 +16,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
   });
 
   const [isConnected, setIsConnected] = useState(false);
-  const socketRef = useRef<any>(null);
+  const socketRef = useRef<Socket | null>(null);
   const requestTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Función para actualizar estado de manera segura
@@ -38,8 +39,10 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Debounce de 1 segundo
     requestTimeoutRef.current = setTimeout(() => {
-      socketRef.current.emit('getWhatsappStatus', { phoneNumber });
-      updateState({ isLoading: true });
+      if (socketRef.current) {
+        socketRef.current.emit('getWhatsappStatus', { phoneNumber });
+        updateState({ isLoading: true });
+      }
     }, 1000);
   }, [phoneNumber, updateState]);
 

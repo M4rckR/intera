@@ -21,7 +21,7 @@ const connectSocket = useStatusStore(state => state.connectSocket);
 
   useEffect(() => {
     connectSocket();
-  }, []);
+  }, [connectSocket]);
 
   return (
     <AlertDialog>

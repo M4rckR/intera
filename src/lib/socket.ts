@@ -40,7 +40,7 @@ class SocketManager {
       // Socket disconnected
     });
 
-    this.socket.on('connect_error', (error) => {
+    this.socket.on('connect_error', () => {
       this.reconnectAttempts++;
       
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
