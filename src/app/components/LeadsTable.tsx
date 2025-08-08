@@ -23,17 +23,44 @@ export function LeadsTable({ leads }: LeadsTableProps) {
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
   console.log(leads);
 
-  const handleToggleBot = async (leadId: string, newStatus: boolean) => {
+  const handleToggleBot = async (leadId: string, newStatus: boolean, leadPhone: string) => {
     try {
+      // Obtener el número de teléfono del usuario actual (gestor)
+      const userPhone = user?.phones?.[0]?.number;
+      if (!userPhone) {
+        throw new Error('No se encontró el número de teléfono del gestor');
+      }
+
+      const requestBody = { 
+        userPhone: leadPhone, // Número de teléfono del cliente (lead.phone)
+        phoneNumber: userPhone, // Número de teléfono del gestor
+        is_bot_active: Boolean(newStatus) // Asegurar que sea boolean
+      };
+      console.log('🔧 Sending bot status update:', {
+        url: buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS),
+        body: requestBody,
+        phoneNumber: leadPhone,
+        userPhone,
+        is_bot_active: newStatus
+      });
+
       // Lógica para actualizar el estado del bot por HTTP POST
-      await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS), {
+      const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ id: leadId, is_bot_active: newStatus }),
+        body: JSON.stringify(requestBody),
       }); 
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Server error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      console.log('✅ Bot status updated successfully');
       // El backend emitirá 'leadsData' actualizado por socket automáticamente
     } catch (error) {
       console.error('Error updating bot status:', error);
@@ -187,7 +214,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                 <span>
                                   <Switch
                                     checked={lead.isBotActive}
-                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus)}
+                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.phone)}
                                     className={cn(
                                       "w-12 h-7 border-2 transition-all duration-200",
                                       lead.isBotActive ? '' : ''
