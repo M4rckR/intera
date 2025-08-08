@@ -66,20 +66,6 @@ export function LeadsTable({ leads }: LeadsTableProps) {
     return `S/ ${price}`;
   };
 
-  const formatDate = (date: string) => {
-    if (!date || date === "N/A") return "No especificado";
-    return new Date(date).toLocaleDateString('es-PE', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    });
-  };
-
-  const formatTime = (time: string) => {
-    if (!time || time === "N/A") return "No especificado";
-    return time;
-  };
-
   if (!canManageBots && !canSeeActions) {
     return (
       <Card className="shadow-sm border">
