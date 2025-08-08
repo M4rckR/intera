@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/form'
 import { useAuthStore } from '@/store/auth'
 import { toast } from 'sonner'
+import { redirect } from 'next/navigation'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -27,16 +28,20 @@ export default function LoginPage() {
   const login = useAuthStore((state) => state.login)
   const isLoading = useAuthStore((state) => state.isLoading)
   const error = useAuthStore((state) => state.error)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   useEffect(() => {
-    if (error) {
+    if (error && !isAuthenticated) {
       toast.error(error, {
         position: 'top-right',
         duration: 3000,
         className: 'bg-red-500 text-white',
       })
     }
-  }, [error])
+    if (isAuthenticated) {
+      redirect('/home')
+    }
+  }, [error, isAuthenticated])
 
   const form = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
@@ -47,7 +52,7 @@ export default function LoginPage() {
   })
 
   async function onSubmit(values: z.infer<typeof credentialsSchema>) {
-    await login(values)
+    await login(values);
   }
 
   return (
@@ -133,10 +138,10 @@ export default function LoginPage() {
                 {/* Botón de login */}
                 <Button
                   type="submit"
-                  disabled={!isLoading}
+                  disabled={isLoading}
                   className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100"
                 >
-                  {!isLoading ? (
+                  {isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>Iniciando sesión...</span>

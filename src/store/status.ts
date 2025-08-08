@@ -1,4 +1,4 @@
-import { Lead, Stats, LeadFromBackend } from "@/types/dataLeads";
+import { LeadBasic, Stats, LeadFromBackend } from "@/types/dataLeads";
 import { DataConnection } from "@/types/dataConnection";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -11,7 +11,7 @@ const HEARTBEAT_INTERVAL = 30000; // 30 segundos
 let heartbeatInterval: NodeJS.Timeout | null = null;
 
 // Función para convertir datos aplanados del backend a estructura anidada
-const convertBackendLeadToFrontend = (backendLead: LeadFromBackend): Lead => {
+const convertBackendLeadToFrontend = (backendLead: LeadFromBackend): LeadBasic => {
   return {
     id: backendLead.id,
     phone: backendLead.phone,
@@ -40,7 +40,7 @@ type StatusState = {
   timeoutReached: boolean;
   connection: DataConnection | null;
   lastUpdate: number | null;
-  leads: Lead[];
+  leads: LeadBasic[];
   stats: Stats | null;
   setActive: (active: boolean) => void;
   connectSocket: () => void;
@@ -168,7 +168,7 @@ export const useStatusStore = create<StatusState>()(
         });
 
         // Evento para el estado de WhatsApp
-        socketInstance.on("whatsapp-status", (data) => {
+        socketInstance.on("whatsappStatus", (data) => {
           console.log('📱 WhatsApp status actualizado:', data);
           const now = Date.now();
           set(
@@ -179,7 +179,7 @@ export const useStatusStore = create<StatusState>()(
               lastUpdate: now
             },
             false,
-            'whatsapp-status:update'
+            'whatsappStatus:update'
           );
         });
 

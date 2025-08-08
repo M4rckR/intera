@@ -15,6 +15,11 @@ export const userSchema = z.object({
             id: z.number(),
             is_bot_active: z.boolean()
         }).nullable()
-    }))
+    })),
+    roles: z.object({
+        isAdmin: z.boolean().optional(),
+        isAdminBot: z.boolean().optional(),
+        isManager: z.boolean().optional()
+    }).optional()
 });
 

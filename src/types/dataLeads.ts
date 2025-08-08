@@ -20,7 +20,7 @@ export type BotState = {
   isBotActive: boolean;
 }
 
-export type Lead = {
+export type LeadBasic = {
   id: string;
   phone: string;
   conversationState?: ConversationState;
