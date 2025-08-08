@@ -1,9 +1,8 @@
 import { checkConnectionSchema } from "@/schemas/checkConnection";
 import axios from "axios";
+import { buildApiUrl, BACKEND_CONFIG } from "@/lib/config";
 
-const urlCheckConnection = process.env.NEXT_PUBLIC_API_URL 
-  ? `${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/status`
-  : "http://54.172.153.21:4000/api/whatsapp/status";
+const urlCheckConnection = buildApiUrl(BACKEND_CONFIG.ENDPOINTS.WHATSAPP_STATUS);
 
 export const fetchConnection = async () => {
     try {

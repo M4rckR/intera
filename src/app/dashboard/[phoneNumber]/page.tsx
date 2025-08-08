@@ -6,8 +6,14 @@ import { LeadsTable } from '@/app/components/LeadsTable';
 import { Header } from '@/app/components/Header';
 import { useAuthStore } from '@/store/auth';
 import { LeadTable } from '@/types/components';
+import { BACKEND_CONFIG } from '@/lib/config';
 
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://54.172.153.21:4000');
+const socket = io(BACKEND_CONFIG.SOCKET_URL, {
+  transports: ['websocket', 'polling'],
+  withCredentials: true,
+  timeout: 20000,
+  forceNew: true
+});
 
 export default function DashboardPhonePage() {
   const params = useParams();

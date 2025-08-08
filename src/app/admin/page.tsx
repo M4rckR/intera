@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AdminPanel } from '@/app/components/AdminPanel';
 import { Header } from '@/app/components/Header';
 import { Manager } from '@/types/admin';
+import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 
 export default function AdminPage() {
   const [managers, setManagers] = useState<Manager[]>([]);
@@ -33,7 +34,7 @@ export default function AdminPage() {
     const fetchManagers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://54.172.153.21:4000/api/admin/getManagers', {
+        const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.ADMIN.GET_MANAGERS), {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',

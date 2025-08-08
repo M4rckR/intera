@@ -115,7 +115,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                 <TableHeader>
                   <TableRow className="border-gray-200">
                     <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Paciente</TableHead>
-                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Distrito</TableHead>
+                    <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Información del Paciente</TableHead>
                     <TableHead className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>Procedimiento</TableHead>
                     {canManageBots && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Bot activo</TableHead>}
                     {canSeeActions && <TableHead className="font-semibold text-center" style={{ color: COLOR_AZUL_OSCURO }}>Acciones</TableHead>}
@@ -144,10 +144,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                           {/* Fecha y hora en la columna distrito para compactar */}
                           <div className="text-xs text-gray-400 space-y-0.5">
                             {lead.date && lead.date !== "N/A" && (
-                              <div>📅 {formatDate(lead.date)}</div>
+                              <div>📅 {lead.date}</div>
                             )}
                             {lead.time && lead.time !== "N/A" && (
-                              <div>🕐 {formatTime(lead.time)}</div>
+                              <div>🕐 {lead.time}</div>
                             )}
                           </div>
                         </div>

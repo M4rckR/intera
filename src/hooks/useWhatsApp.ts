@@ -1,0 +1,175 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { socketManager } from '@/lib/socket';
+import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
+import { WhatsAppState, UseWhatsAppReturn, WhatsAppStatusData } from '@/types/whatsapp';
+
+export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
+  const [state, setState] = useState<WhatsAppState>({
+    isReady: false,
+    qrCode: null,
+    isQrEmpty: true,
+    isLoading: false,
+    error: null,
+    isBlocked: false,
+    lastUpdate: null,
+  });
+
+  const [isConnected, setIsConnected] = useState(false);
+  const socketRef = useRef<any>(null);
+  const requestTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Función para actualizar estado de manera segura
+  const updateState = useCallback((updates: Partial<WhatsAppState>) => {
+    setState(prev => ({
+      ...prev,
+      ...updates,
+      lastUpdate: new Date(),
+    }));
+  }, []);
+
+  // Función para solicitar estado con debounce
+  const requestStatus = useCallback(() => {
+    if (!socketRef.current?.connected) return;
+
+    // Limpiar timeout anterior
+    if (requestTimeoutRef.current) {
+      clearTimeout(requestTimeoutRef.current);
+    }
+
+    // Debounce de 1 segundo
+    requestTimeoutRef.current = setTimeout(() => {
+      socketRef.current.emit('getWhatsappStatus', { phoneNumber });
+      updateState({ isLoading: true });
+    }, 1000);
+  }, [phoneNumber, updateState]);
+
+  // Configurar socket y listeners
+  useEffect(() => {
+    const socket = socketManager.connect();
+    socketRef.current = socket;
+
+    // Actualizar estado de conexión
+    const updateConnectionStatus = () => {
+      setIsConnected(socket.connected);
+    };
+
+    socket.on('connect', updateConnectionStatus);
+    socket.on('disconnect', updateConnectionStatus);
+
+    // Listeners específicos para este teléfono
+    const qrEventName = `qr_${phoneNumber}`;
+    const statusEventName = `whatsappStatus_${phoneNumber}`;
+    const requestQrEventName = `requestNewQr_${phoneNumber}`;
+
+    // Listener para QR
+    const qrListener = (qr: string | null) => {
+      if (!state.isBlocked) {
+        updateState({
+          qrCode: qr,
+          isQrEmpty: !qr,
+          error: null,
+          isLoading: false,
+        });
+      }
+    };
+
+    // Listener para estado
+    const statusListener = (data: WhatsAppStatusData) => {
+      if (data.error === 'QR_BLOCKED') {
+        updateState({
+          isReady: false,
+          qrCode: null,
+          isQrEmpty: true,
+          error: data.message || 'QR bloqueado por exceso de intentos',
+          isBlocked: true,
+          isLoading: false,
+        });
+      } else {
+        // Lógica corregida: WhatsApp está listo solo si isReady es true Y no hay QR disponible
+        const isActuallyReady = data.isReady && !data.qrCodeUrl;
+        const isQrEmpty = !data.qrCodeUrl || data.qrCodeUrl === '';
+
+        updateState({
+          isReady: isActuallyReady,
+          qrCode: data.qrCodeUrl,
+          isQrEmpty: isQrEmpty,
+          error: data.error || null,
+          isBlocked: false,
+          isLoading: false,
+        });
+      }
+    };
+
+    // Listener para solicitud de nuevo QR
+    const requestQrListener = () => {
+      updateState({
+        isLoading: true,
+        error: null,
+        isBlocked: false,
+        isQrEmpty: false,
+      });
+      requestStatus();
+    };
+
+    // Registrar listeners
+    socket.on(qrEventName, qrListener);
+    socket.on(statusEventName, statusListener);
+    socket.on(requestQrEventName, requestQrListener);
+
+    // Solicitar estado inicial
+    if (socket.connected) {
+      requestStatus();
+    } else {
+      socket.once('connect', requestStatus);
+    }
+
+    // Cleanup
+    return () => {
+      socket.off(qrEventName, qrListener);
+      socket.off(statusEventName, statusListener);
+      socket.off(requestQrEventName, requestQrListener);
+      socket.off('connect', updateConnectionStatus);
+      socket.off('disconnect', updateConnectionStatus);
+      
+      if (requestTimeoutRef.current) {
+        clearTimeout(requestTimeoutRef.current);
+      }
+    };
+  }, [phoneNumber, state.isBlocked, updateState, requestStatus]);
+
+  // Función para solicitar nuevo QR
+  const requestNewQr = useCallback(async () => {
+    updateState({ 
+      isLoading: true,
+      error: null,
+      isBlocked: false,
+      isQrEmpty: false,
+    });
+
+    try {
+      const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.RECONNECT), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      updateState({
+        error: `Error al reconectar: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        isBlocked: true,
+        isLoading: false,
+      });
+    }
+  }, [phoneNumber, updateState]);
+
+  return {
+    state,
+    requestNewQr,
+    isConnected,
+  };
+};
