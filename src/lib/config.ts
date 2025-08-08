@@ -14,6 +14,9 @@ export const BACKEND_CONFIG = {
       GET_MANAGERS: '/api/admin/getManagers',
       DESACTIVE_RECONTACT: '/api/admin/desactiveRecontact',
       DESACTIVE_REMINDER: '/api/admin/desactiveReminder',
+    },
+    LEADS: {
+      UPDATE_BOT_STATUS: '/api/leads/update-bot-status',
     }
   }
 } as const;

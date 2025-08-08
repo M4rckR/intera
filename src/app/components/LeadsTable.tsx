@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import * as Tooltip from '@radix-ui/react-tooltip';
 
 import { LeadsTableProps } from '@/types/components';
+import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 
 // Paleta de colores del logo
 const COLOR_TURQUESA = '#00CFC3';
@@ -25,7 +26,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
   const handleToggleBot = async (leadId: string, newStatus: boolean) => {
     try {
       // Lógica para actualizar el estado del bot por HTTP POST
-      await fetch('/api/leads/update-bot-status', {
+      await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
