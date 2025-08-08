@@ -15,8 +15,6 @@ apiClient.interceptors.response.use(
             localStorage.removeItem('token');
             redirect('/login');
         }
-        // console.log("OSITO GOMINOLA:", error.response?.data);
-        // return error.response
-        return Promise.reject(error);
+        return error.response
     }
 );

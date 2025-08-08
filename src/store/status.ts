@@ -3,6 +3,7 @@ import { DataConnection } from "@/types/dataConnection";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { io, Socket } from "socket.io-client";
+import { BACKEND_CONFIG } from "@/lib/config";
 
 let socket: Socket | null = null;
 let reconnectAttempts = 0;
@@ -110,7 +111,7 @@ export const useStatusStore = create<StatusState>()(
           'connectSocket:start'
         );
         
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://54.172.153.21:4000";
+        const socketUrl = BACKEND_CONFIG.SOCKET_URL;
         const socketInstance = io(socketUrl, {
           reconnection: true,
           reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,

@@ -6,6 +6,7 @@ import { Badge } from '@/app/components/ui/badge';
 import { User, Settings } from 'lucide-react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { AdminPanelProps } from '@/types/admin';
+import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 
 // Paleta de colores del logo
 const COLOR_TURQUESA = '#00CFC3';
@@ -25,7 +26,7 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       setUpdatingManager(managerId);
       console.log(`Actualizando recontact para manager ${managerId} a ${newStatus}`);
       
-      const response = await fetch('https://callhub.insalud.pe/api/admin/desactiveRecontact', {
+      const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.ADMIN.DESACTIVE_RECONTACT), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -64,7 +65,7 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       setUpdatingManager(managerId);
       console.log(`Actualizando reminder para manager ${managerId} a ${newStatus}`);
       
-      const response = await fetch('https://callhub.insalud.pe/api/admin/desactiveReminder', {
+      const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.ADMIN.DESACTIVE_REMINDER), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -253,4 +254,4 @@ export function AdminPanel({ managers }: AdminPanelProps) {
       </div>
     </Tooltip.Provider>
   );
-} 
+}

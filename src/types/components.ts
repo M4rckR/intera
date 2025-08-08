@@ -33,11 +33,5 @@ export interface HeaderProps {
 // Tipos para componentes de QR
 export interface QrCardProps {
   phoneNumber: string;
-  isReady: boolean;
-  qr: string | null;
-  isLoading: boolean;
-  isQrEmpty: boolean;
-  error?: string | null;
-  onRequestNewQr: (phoneNumber: string) => void;
-  onGoToDashboard?: (phoneNumber: string) => void;
+  onGoToDashboard: (phoneNumber: string) => void;
 } 
