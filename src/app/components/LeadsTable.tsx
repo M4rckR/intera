@@ -76,13 +76,13 @@ export function LeadsTable({ leads }: LeadsTableProps) {
 
   const getStateColor = (state: string) => {
     switch (state.toLowerCase()) {
-      case 'confirmado':
+      case 'ACCEPTED':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'pendiente':
+      case 'PENDIENT':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'evaluación':
+      case 'EVALUATED':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'requested':
+      case 'REQUESTED':
         return `bg-[${COLOR_TURQUESA}] text-white border-[${COLOR_TURQUESA}]`;
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
