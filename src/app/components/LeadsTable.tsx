@@ -186,7 +186,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                           </Badge>
                                         </span>
                                       </Tooltip.Trigger>
-                                      <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
+                                      <Tooltip.Content side="top" className="z-50 bg-gray-900 text-black font-medium px-2 py-1 rounded shadow">
                                         Estado: {procedure.state.charAt(0).toUpperCase() + procedure.state.slice(1)}
                                       </Tooltip.Content>
                                     </Tooltip.Root>
