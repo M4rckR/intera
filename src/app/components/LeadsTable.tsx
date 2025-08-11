@@ -21,7 +21,6 @@ export function LeadsTable({ leads }: LeadsTableProps) {
   const roles = user?.roles || {};
   const canManageBots = roles.isAdmin || roles.isAdminBot;
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
-  console.log(leads);
 
   const handleToggleBot = async (leadId: string, newStatus: boolean, leadPhone: string) => {
     try {
@@ -181,12 +180,12 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                     <Tooltip.Root delayDuration={200}>
                                       <Tooltip.Trigger asChild>
                                         <span>
-                                          <Badge className={cn("text-xs px-2 py-0.5 cursor-help", getStateColor(procedure.state))}>
+                                          <Badge className={cn("text-xs px-2 py-0.5 text-black font-medium cursor-help", getStateColor(procedure.state))}>
                                             {procedure.state.toUpperCase()}
                                           </Badge>
                                         </span>
                                       </Tooltip.Trigger>
-                                      <Tooltip.Content side="top" className="z-50 bg-gray-900 text-black font-medium px-2 py-1 rounded shadow">
+                                      <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
                                         Estado: {procedure.state.charAt(0).toUpperCase() + procedure.state.slice(1)}
                                       </Tooltip.Content>
                                     </Tooltip.Root>
