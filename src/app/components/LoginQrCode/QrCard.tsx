@@ -17,6 +17,8 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
     if (state.error) return 'red';
     if (state.isReady) return 'green';
     if (state.isLoading) return 'yellow';
+    if (state.qrCode && !state.isReady) return 'blue';
+    if (state.isQrEmpty) return 'gray';
     return 'gray';
   };
 
@@ -24,8 +26,9 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
     if (state.error) return 'Error';
     if (state.isReady) return 'Conectado';
     if (state.isLoading) return 'Cargando...';
+    if (state.qrCode && !state.isReady) return 'Escaneando...';
     if (state.isQrEmpty) return 'Esperando QR';
-    return 'Escaneando...';
+    return 'Esperando...';
   };
 
   return (
@@ -67,7 +70,7 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
               onClick={requestNewQr}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
-              Reintentar
+              {state.isBlocked ? 'Solicitar Nuevo QR' : 'Reintentar'}
             </button>
           </div>
         )}
@@ -97,14 +100,6 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
             <p className="text-gray-600 text-sm mb-4">
               Escanea el código QR con WhatsApp
             </p>
-            <div className="flex space-x-2">
-              <button
-                onClick={requestNewQr}
-                className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors"
-              >
-                Nuevo QR
-              </button>
-            </div>
           </div>
         )}
 

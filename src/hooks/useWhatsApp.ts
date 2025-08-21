@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { socketManager } from '@/lib/socket';
 import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
-import { WhatsAppState, UseWhatsAppReturn, WhatsAppStatusData } from '@/types/whatsapp';
+import { WhatsAppState, UseWhatsAppReturn, WhatsAppStatusData, RequestNewQrData } from '@/types/whatsapp';
 import { Socket } from 'socket.io-client';
 
 export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
@@ -53,8 +53,12 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Actualizar estado de conexión
     const updateConnectionStatus = () => {
-      setIsConnected(socket.connected);
+      const connected = socket.connected;
+      setIsConnected(connected);
     };
+
+    // Actualizar estado inicial
+    updateConnectionStatus();
 
     socket.on('connect', updateConnectionStatus);
     socket.on('disconnect', updateConnectionStatus);
@@ -66,22 +70,24 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Listener para QR
     const qrListener = (qr: string | null) => {
-      if (!state.isBlocked) {
-        updateState({
-          qrCode: qr,
-          isQrEmpty: !qr,
-          error: null,
-          isLoading: false,
-        });
-      }
+      // Siempre actualizar el estado del QR, incluso si está bloqueado
+      updateState({
+        qrCode: qr,
+        isQrEmpty: !qr,
+        error: null,
+        isLoading: false,
+      });
     };
 
     // Listener para estado
     const statusListener = (data: WhatsAppStatusData) => {
+      console.log(`📊 Status received for ${phoneNumber}:`, data);
+      
       if (data.error === 'QR_BLOCKED') {
+        console.log(`🚫 QR blocked for ${phoneNumber}, clearing QR and showing error`);
         updateState({
           isReady: false,
-          qrCode: null,
+          qrCode: null, // Forzar limpiar el QR
           isQrEmpty: true,
           error: data.message || 'QR bloqueado por exceso de intentos',
           isBlocked: true,
@@ -91,27 +97,38 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
         // Lógica corregida: WhatsApp está listo solo si isReady es true Y no hay QR disponible
         const isActuallyReady = data.isReady && !data.qrCodeUrl;
         const isQrEmpty = !data.qrCodeUrl || data.qrCodeUrl === '';
+        
+        // Solo mostrar error si realmente hay un error, no cuando está esperando
+        const shouldShowError = data.error && data.error !== 'QR_BLOCKED' && data.error !== '';
 
         updateState({
           isReady: isActuallyReady,
           qrCode: data.qrCodeUrl,
           isQrEmpty: isQrEmpty,
-          error: data.error || null,
+          error: shouldShowError ? data.error : null,
           isBlocked: false,
           isLoading: false,
         });
       }
     };
 
-    // Listener para solicitud de nuevo QR
-    const requestQrListener = () => {
-      updateState({
-        isLoading: true,
-        error: null,
-        isBlocked: false,
-        isQrEmpty: false,
-      });
-      requestStatus();
+    // Listener para solicitud de nuevo QR desde el backend
+    const requestQrListener = (data: RequestNewQrData) => {
+      console.log(`📡 Received requestNewQr event for ${phoneNumber}, action: ${data.action}`);
+      
+      if (data.action === 'reconnected') {
+        updateState({
+          isLoading: true,
+          error: null,
+          isBlocked: false,
+          isQrEmpty: false,
+        });
+        setTimeout(() => {
+          if (socket.connected) {
+            socket.emit('getWhatsappStatus', { phoneNumber });
+          }
+        }, 1000);
+      }
     };
 
     // Registrar listeners
@@ -161,6 +178,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
     } catch (error) {
       updateState({
         error: `Error al reconectar: ${error instanceof Error ? error.message : 'Error desconocido'}`,
@@ -168,7 +186,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
         isLoading: false,
       });
     }
-  }, [phoneNumber, updateState]);
+  }, [phoneNumber, updateState, state.isBlocked]);
 
   return {
     state,
