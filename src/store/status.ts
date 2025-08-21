@@ -156,8 +156,7 @@ export const useStatusStore = create<StatusState>()(
         });
 
         // Evento cuando se desconecta
-        socketInstance.on("disconnect", (reason) => {
-          console.log('🔌❌ Socket desconectado:', reason);
+        socketInstance.on("disconnect", () => {
           set(
             { 
               isLoading: false,
