@@ -36,11 +36,10 @@ class SocketManager {
       this.reconnectAttempts = 0;
     });
 
-    this.socket.on('disconnect', () => {
-      // Socket disconnected
+    this.socket.on('disconnect', (reason) => {
     });
 
-    this.socket.on('connect_error', () => {
+    this.socket.on('connect_error', (error) => {
       this.reconnectAttempts++;
       
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {

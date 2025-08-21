@@ -31,3 +31,10 @@ export interface ReconnectResponse {
   message?: string;
   error?: string;
 }
+
+// Tipos para los eventos de solicitud de nuevo QR
+export interface RequestNewQrData {
+  phoneNumber: string;
+  timestamp: number;
+  action?: string;
+}

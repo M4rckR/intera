@@ -28,7 +28,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
       const userPhone = user?.phones?.[0]?.number;
       if (!userPhone) {
         throw new Error('No se encontró el número de teléfono del gestor');
-      }
+      } 
 
       const requestBody = { 
         userPhone: leadPhone, // Número de teléfono del cliente (lead.phone)
