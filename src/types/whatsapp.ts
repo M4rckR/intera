@@ -5,6 +5,7 @@ export interface WhatsAppState {
   isQrEmpty: boolean;
   isLoading: boolean;
   error: string | null;
+  errorType: string | null; // Tipo de error: 'QR_BLOCKED', 'CONNECTION_FAILURE', etc.
   isBlocked: boolean;
   lastUpdate: Date | null;
 }
