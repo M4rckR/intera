@@ -93,13 +93,22 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
           isBlocked: true,
           isLoading: false,
         });
+      } else if (data.error === 'CONNECTION_FAILURE') {
+        updateState({
+          isReady: false,
+          qrCode: null,
+          isQrEmpty: true,
+          error: data.message || 'Error de conexión con WhatsApp. Reconectando automáticamente...',
+          isBlocked: false, // No bloquear, permitir reintentos
+          isLoading: false,
+        });
       } else {
         // Lógica corregida: WhatsApp está listo solo si isReady es true Y no hay QR disponible
         const isActuallyReady = data.isReady && !data.qrCodeUrl;
         const isQrEmpty = !data.qrCodeUrl || data.qrCodeUrl === '';
         
         // Solo mostrar error si realmente hay un error, no cuando está esperando
-        const shouldShowError = data.error && data.error !== 'QR_BLOCKED' && data.error !== '';
+        const shouldShowError = data.error && data.error !== 'QR_BLOCKED' && data.error !== 'CONNECTION_FAILURE' && data.error !== '';
 
         updateState({
           isReady: isActuallyReady,
@@ -162,7 +171,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
     updateState({ 
       isLoading: true,
       error: null,
-      isBlocked: false,
+      isBlocked: false, // Reset blocked state
       isQrEmpty: false,
     });
 
@@ -178,7 +187,6 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
     } catch (error) {
       updateState({
         error: `Error al reconectar: ${error instanceof Error ? error.message : 'Error desconocido'}`,

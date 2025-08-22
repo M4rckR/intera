@@ -199,7 +199,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                               </div>
                             ))
                           ) : (
-                            <span className="text-sm text-gray-400">[object Object]</span>
+                            <span className="text-sm text-gray-400">No hay procedimientos</span>
                           )}
                         </div>
                       </TableCell>
