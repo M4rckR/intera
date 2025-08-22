@@ -11,6 +11,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
     isQrEmpty: true,
     isLoading: false,
     error: null,
+    errorType: null,
     isBlocked: false,
     lastUpdate: null,
   });
@@ -75,6 +76,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
         qrCode: qr,
         isQrEmpty: !qr,
         error: null,
+        errorType: null,
         isLoading: false,
       });
     };
@@ -90,15 +92,18 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
           qrCode: null, // Forzar limpiar el QR
           isQrEmpty: true,
           error: data.message || 'QR bloqueado por exceso de intentos',
+          errorType: data.error, // Usar data.error que contiene 'QR_BLOCKED'
           isBlocked: true,
           isLoading: false,
         });
       } else if (data.error === 'CONNECTION_FAILURE') {
+        console.log(`🔄 Connection failure for ${phoneNumber}, waiting for auto-reconnect...`);
         updateState({
           isReady: false,
           qrCode: null,
           isQrEmpty: true,
           error: data.message || 'Error de conexión con WhatsApp. Reconectando automáticamente...',
+          errorType: data.error, // Usar data.error que contiene 'CONNECTION_FAILURE'
           isBlocked: false, // No bloquear, permitir reintentos
           isLoading: false,
         });
@@ -115,6 +120,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
           qrCode: data.qrCodeUrl,
           isQrEmpty: isQrEmpty,
           error: shouldShowError ? data.error : null,
+          errorType: shouldShowError ? data.error : null,
           isBlocked: false,
           isLoading: false,
         });
@@ -129,6 +135,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
         updateState({
           isLoading: true,
           error: null,
+          errorType: null,
           isBlocked: false,
           isQrEmpty: false,
         });
@@ -171,6 +178,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
     updateState({ 
       isLoading: true,
       error: null,
+      errorType: null,
       isBlocked: false, // Reset blocked state
       isQrEmpty: false,
     });

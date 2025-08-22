@@ -14,7 +14,7 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
   const { state, requestNewQr, isConnected } = useWhatsApp(phoneNumber);
 
   const getStatusColor = () => {
-    if (state.error === 'CONNECTION_FAILURE') return 'yellow'; // Amarillo para reconexión
+    if (state.errorType === 'CONNECTION_FAILURE') return 'yellow'; // Amarillo para reconexión
     if (state.error) return 'red';
     if (state.isReady) return 'green';
     if (state.isLoading) return 'yellow';
@@ -24,7 +24,7 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
   };
 
   const getStatusText = () => {
-    if (state.error === 'CONNECTION_FAILURE') return 'Reconectando...';
+    if (state.errorType === 'CONNECTION_FAILURE') return 'Reconectando...';
     if (state.error) return 'Error';
     if (state.isReady) return 'Conectado';
     if (state.isLoading) return 'Cargando...';
@@ -60,7 +60,7 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
           </div>
         )}
 
-        {state.error === 'CONNECTION_FAILURE' && (
+        {state.errorType === 'CONNECTION_FAILURE' && (
           <div className="h-48 flex flex-col items-center justify-center">
             <div className="text-yellow-500 mb-4">
               <svg className="w-12 h-12 animate-spin" fill="currentColor" viewBox="0 0 20 20">
@@ -82,7 +82,7 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
           </div>
         )}
 
-        {state.error && state.error !== 'CONNECTION_FAILURE' && (
+        {state.error && state.errorType !== 'CONNECTION_FAILURE' && (
           <div className="h-48 flex flex-col items-center justify-center">
             <div className="text-red-500 mb-4">
               <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
