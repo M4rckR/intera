@@ -21,7 +21,20 @@ export function LeadsTable({ leads }: LeadsTableProps) {
   const roles = user?.roles || {};
   const canManageBots = roles.isAdmin || roles.isAdminBot;
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
-  console.log(leads);
+  
+  // Debug: logs detallados de los leads
+  console.log('🔍 LeadsTable: Leads received:', leads);
+  console.log('🔍 LeadsTable: Total leads:', leads.length);
+  
+  leads.forEach((lead, index) => {
+    console.log(`🔍 LeadsTable Lead ${index + 1}:`, {
+      id: lead.id,
+      clientPhone: lead.clientPhone,
+      phone: lead.phone,
+      name: lead.name,
+      isValid: lead.clientPhone !== lead.phone
+    });
+  });
 
   const handleToggleBot = async (leadId: string, newStatus: boolean, leadPhone: string) => {
     try {
@@ -32,7 +45,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
       } 
 
       const requestBody = { 
-        userPhone: leadPhone, // Número de teléfono del cliente (lead.phone)
+        userPhone: leadPhone, // Número de teléfono del cliente (lead.clientPhone)
         phoneNumber: userPhone, // Número de teléfono del gestor
         is_bot_active: Boolean(newStatus) // Asegurar que sea boolean
       };
@@ -142,7 +155,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <div className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>{lead.name}</div>
-                          <div className="text-sm text-gray-500">Cliente: {lead.phone}</div>
+                          <div className="text-sm text-gray-500">Cliente: {lead.clientPhone}</div>
                         </div>
                       </TableCell>
 
@@ -197,6 +210,11 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                     <span>💵</span> {formatPrice(procedure.precio)}
                                   </div>
                                 )}
+                                {procedure.package_name && procedure.package_name !== "N/A" && (
+                                  <div className="text-sm text-gray-500 mt-0.5">
+                                    📦 {procedure.package_name} 
+                                  </div>
+                                )}
                               </div>
                             ))
                           ) : (
@@ -214,7 +232,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                 <span>
                                   <Switch
                                     checked={lead.isBotActive}
-                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.phone)}
+                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.clientPhone)}
                                     className={cn(
                                       "w-12 h-7 border-2 transition-all duration-200",
                                       lead.isBotActive ? '' : ''

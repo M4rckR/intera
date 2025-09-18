@@ -25,17 +25,53 @@ export default function DashboardPhonePage() {
 
   useEffect(() => {
     if (!phoneNumber) return;
+    console.log('📡 Requesting leads for phoneNumber:', phoneNumber);
     socket.emit('getLeads', { phoneNumber });
   }, [phoneNumber]);
 
   useEffect(() => {
+    // Verificar conexión del socket
+    console.log('🔌 Socket connected:', socket.connected);
+    
     const handleLeads = (leadsData: LeadTable[]) => {
-      const filteredLeads = leadsData.filter(lead => lead.clientPhone === phoneNumber);
-      setLeads(filteredLeads);
+      console.log('📥 Leads received from backend:', leadsData);
+      console.log('📥 Total leads received:', leadsData.length);
+      
+      // Debug: imprimir cada lead recibido
+      leadsData.forEach((lead, index) => {
+        console.log(`📥 Lead ${index + 1}:`, {
+          id: lead.id,
+          clientPhone: lead.clientPhone,
+          phone: lead.phone,
+          name: lead.name
+        });
+      });
+      
+      // ✅ CORRECCIÓN: Mostrar leads donde clientPhone !== phoneNumber
+      // (leads de clientes diferentes al manager)
+      const validLeads = leadsData.filter(lead => lead.clientPhone !== phoneNumber);
+      
+      console.log('📥 Valid leads after filtering:', validLeads);
+      console.log('📥 Total valid leads:', validLeads.length);
+      
+      setLeads(validLeads);
     };
+    
+    // Escuchar eventos de conexión
+    socket.on('connect', () => {
+      console.log('🔌 Socket connected successfully');
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('🔌 Socket disconnected');
+    });
+    
     socket.on('leadsData', handleLeads);
+    
     return () => {
       socket.off('leadsData', handleLeads);
+      socket.off('connect');
+      socket.off('disconnect');
     };
   }, [phoneNumber]);
 
