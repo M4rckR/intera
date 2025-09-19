@@ -1,10 +1,10 @@
 // Configuración centralizada para las URLs del backend
 export const BACKEND_CONFIG = {
   // URL base del backend
-  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'https://callhub.insalud.pe',
   
   // URL del socket
-  SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8000',
+  SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'https://callhub.insalud.pe',
   
   // Endpoints específicos
   ENDPOINTS: {

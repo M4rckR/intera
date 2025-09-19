@@ -8,12 +8,17 @@ import { useAuthStore } from '@/store/auth';
 import { LeadTable } from '@/types/components';
 import { BACKEND_CONFIG } from '@/lib/config';
 
+console.log('🔍 ===== SOCKET INITIALIZATION =====');
+console.log('🔌 Socket URL:', BACKEND_CONFIG.SOCKET_URL);
+
 const socket = io(BACKEND_CONFIG.SOCKET_URL, {
   transports: ['websocket', 'polling'],
   withCredentials: true,
   timeout: 20000,
   forceNew: true
 });
+
+console.log('✅ Socket instance created');
 
 export default function DashboardPhonePage() {
   const params = useParams();
@@ -24,9 +29,29 @@ export default function DashboardPhonePage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!phoneNumber) return;
-    console.log('📡 Requesting leads for phoneNumber:', phoneNumber);
-    socket.emit('getLeads', { phoneNumber });
+    if (!phoneNumber) {
+      console.log('❌ No phoneNumber provided');
+      return;
+    }
+    
+    console.log('🔍 ===== SOCKET DIAGNOSTIC =====');
+    console.log('📡 Phone number:', phoneNumber);
+    console.log('🔌 Socket connected:', socket.connected);
+    console.log('🔌 Socket ID:', socket.id);
+    console.log('🔌 Socket URL:', BACKEND_CONFIG.SOCKET_URL);
+    
+    if (socket.connected) {
+      console.log('✅ Socket is connected, emitting getLeads...');
+      socket.emit('getLeads', { phoneNumber });
+      console.log('✅ getLeads event emitted');
+    } else {
+      console.log('❌ Socket not connected, waiting for connection...');
+      socket.once('connect', () => {
+        console.log('✅ Socket connected, now emitting getLeads...');
+        socket.emit('getLeads', { phoneNumber });
+        console.log('✅ getLeads event emitted after connection');
+      });
+    }
   }, [phoneNumber]);
 
   useEffect(() => {
@@ -34,8 +59,23 @@ export default function DashboardPhonePage() {
     console.log('🔌 Socket connected:', socket.connected);
     
     const handleLeads = (leadsData: LeadTable[]) => {
-      console.log('📥 Leads received from backend:', leadsData);
-      console.log('📥 Total leads received:', leadsData.length);
+      console.log('🔍 ===== LEADS DATA RECEIVED =====');
+      console.log('📥 Raw data:', leadsData);
+      console.log('📥 Data type:', typeof leadsData);
+      console.log('📥 Is array:', Array.isArray(leadsData));
+      console.log('📥 Length:', leadsData?.length || 0);
+      
+      if (!leadsData || !Array.isArray(leadsData)) {
+        console.error('❌ Invalid leads data received');
+        setLeads([]);
+        return;
+      }
+      
+      if (leadsData.length === 0) {
+        console.log('⚠️ No leads received');
+        setLeads([]);
+        return;
+      }
       
       // Debug: imprimir cada lead recibido
       leadsData.forEach((lead, index) => {
@@ -66,12 +106,17 @@ export default function DashboardPhonePage() {
       console.log('🔌 Socket disconnected');
     });
     
+    console.log('🔍 ===== REGISTERING SOCKET LISTENERS =====');
+    console.log('📡 Registering leadsData listener...');
     socket.on('leadsData', handleLeads);
+    console.log('✅ leadsData listener registered');
     
     return () => {
+      console.log('🔍 ===== CLEANING UP SOCKET LISTENERS =====');
       socket.off('leadsData', handleLeads);
       socket.off('connect');
       socket.off('disconnect');
+      console.log('✅ Socket listeners cleaned up');
     };
   }, [phoneNumber]);
 
