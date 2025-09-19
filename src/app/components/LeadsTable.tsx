@@ -17,10 +17,20 @@ const COLOR_TURQUESA = '#00CFC3';
 const COLOR_AZUL_OSCURO = '#00405A';
 
 export function LeadsTable({ leads }: LeadsTableProps) {
+  console.log('🔍 ===== LEADS TABLE COMPONENT RENDERED =====');
+  console.log('🔍 LeadsTable props:', { leads });
+  
   const user = useAuthStore((state) => state.user);
   const roles = user?.roles || {};
   const canManageBots = roles.isAdmin || roles.isAdminBot;
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
+  
+  console.log('🔍 LeadsTable state:', {
+    leadsCount: leads?.length || 0,
+    user: user?.username,
+    canManageBots,
+    canSeeActions
+  });
   
   // Debug: logs detallados de los leads
   console.log('🔍 LeadsTable: Leads received:', leads);

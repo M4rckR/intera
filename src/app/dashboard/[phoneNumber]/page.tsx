@@ -21,12 +21,20 @@ const socket = io(BACKEND_CONFIG.SOCKET_URL, {
 console.log('✅ Socket instance created');
 
 export default function DashboardPhonePage() {
+  console.log('🔍 ===== DASHBOARD COMPONENT RENDERED =====');
+  
   const params = useParams();
   const phoneNumber = params?.phoneNumber as string;
   const [leads, setLeads] = useState<LeadTable[]>([]);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+  
+  console.log('🔍 Component state:', {
+    phoneNumber,
+    leadsCount: leads.length,
+    user: user?.username
+  });
 
   useEffect(() => {
     if (!phoneNumber) {
@@ -108,11 +116,22 @@ export default function DashboardPhonePage() {
     
     console.log('🔍 ===== REGISTERING SOCKET LISTENERS =====');
     console.log('📡 Registering leadsData listener...');
-    socket.on('leadsData', handleLeads);
+    
+    // Agregar listener con logs adicionales
+    socket.on('leadsData', (data) => {
+      console.log('🔍 ===== LEADS DATA EVENT TRIGGERED =====');
+      console.log('📥 Event received, calling handleLeads...');
+      handleLeads(data);
+    });
+    
     console.log('✅ leadsData listener registered');
+    
+    // Verificar que el listener se registró correctamente
+    console.log('🔍 Socket listeners count:', socket.listeners('leadsData').length);
     
     return () => {
       console.log('🔍 ===== CLEANING UP SOCKET LISTENERS =====');
+      console.log('🔍 Removing leadsData listener...');
       socket.off('leadsData', handleLeads);
       socket.off('connect');
       socket.off('disconnect');
