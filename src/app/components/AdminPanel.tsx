@@ -24,7 +24,6 @@ export function AdminPanel({ managers }: AdminPanelProps) {
   const handleToggleRecontact = async (managerId: number, newStatus: boolean) => {
     try {
       setUpdatingManager(managerId);
-      console.log(`Actualizando recontact para manager ${managerId} a ${newStatus}`);
       
       const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.ADMIN.DESACTIVE_RECONTACT), {
         method: 'POST',
@@ -52,9 +51,8 @@ export function AdminPanel({ managers }: AdminPanelProps) {
         throw new Error(result.error || 'Error desconocido');
       }
       
-    } catch (error) {
-      console.error('Error updating recontact:', error);
-      // Aquí podrías mostrar un toast de error al usuario
+    } catch {
+      // Handle error silently or show user-friendly message
     } finally {
       setUpdatingManager(null);
     }
@@ -63,7 +61,6 @@ export function AdminPanel({ managers }: AdminPanelProps) {
   const handleToggleReminder = async (managerId: number, newStatus: boolean) => {
     try {
       setUpdatingManager(managerId);
-      console.log(`Actualizando reminder para manager ${managerId} a ${newStatus}`);
       
       const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.ADMIN.DESACTIVE_REMINDER), {
         method: 'POST',
@@ -91,9 +88,8 @@ export function AdminPanel({ managers }: AdminPanelProps) {
         throw new Error(result.error || 'Error desconocido');
       }
       
-    } catch (error) {
-      console.error('Error updating reminder:', error);
-      // Aquí podrías mostrar un toast de error al usuario
+    } catch {
+      // Handle error silently or show user-friendly message
     } finally {
       setUpdatingManager(null);
     }

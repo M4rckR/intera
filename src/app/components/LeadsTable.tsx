@@ -17,36 +17,14 @@ const COLOR_TURQUESA = '#00CFC3';
 const COLOR_AZUL_OSCURO = '#00405A';
 
 export function LeadsTable({ leads }: LeadsTableProps) {
-  console.log('🔍 ===== LEADS TABLE COMPONENT RENDERED =====');
-  console.log('🔍 LeadsTable props:', { leads });
+  
   
   const user = useAuthStore((state) => state.user);
   const roles = user?.roles || {};
   const canManageBots = roles.isAdmin || roles.isAdminBot;
   const canSeeActions = roles.isAdmin || roles.isAdminBot || roles.isManager;
-  
-  console.log('🔍 LeadsTable state:', {
-    leadsCount: leads?.length || 0,
-    user: user?.username,
-    canManageBots,
-    canSeeActions
-  });
-  
-  // Debug: logs detallados de los leads
-  console.log('🔍 LeadsTable: Leads received:', leads);
-  console.log('🔍 LeadsTable: Total leads:', leads.length);
-  
-  leads.forEach((lead, index) => {
-    console.log(`🔍 LeadsTable Lead ${index + 1}:`, {
-      id: lead.id,
-      clientPhone: lead.clientPhone,
-      phone: lead.phone,
-      name: lead.name,
-      isValid: lead.clientPhone !== lead.phone
-    });
-  });
 
-  const handleToggleBot = async (leadId: string, newStatus: boolean, leadPhone: string) => {
+  const handleToggleBot = async (_leadId: string, newStatus: boolean, leadPhone: string) => {
     try {
       // Obtener el número de teléfono del usuario actual (gestor)
       const userPhone = user?.phones?.[0]?.number;
@@ -55,17 +33,10 @@ export function LeadsTable({ leads }: LeadsTableProps) {
       } 
 
       const requestBody = { 
-        userPhone: leadPhone, // Número de teléfono del cliente (lead.clientPhone)
+        userPhone: leadPhone, // Número de teléfono del cliente (lead.phone)
         phoneNumber: userPhone, // Número de teléfono del gestor
         is_bot_active: Boolean(newStatus) // Asegurar que sea boolean
       };
-      console.log('🔧 Sending bot status update:', {
-        url: buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS),
-        body: requestBody,
-        phoneNumber: leadPhone,
-        userPhone,
-        is_bot_active: newStatus
-      });
 
       // Lógica para actualizar el estado del bot por HTTP POST
       const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS), {
@@ -79,23 +50,20 @@ export function LeadsTable({ leads }: LeadsTableProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Server error:', response.status, errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-
-      console.log('✅ Bot status updated successfully');
       // El backend emitirá 'leadsData' actualizado por socket automáticamente
-    } catch (error) {
-      console.error('Error updating bot status:', error);
+    } catch {
+      // Handle error silently or show user-friendly message
     }
   };
 
-  const handleRecontact = (leadId: string) => {
-    console.log(`Solicitando recontacto para el lead: ${leadId}`);
+  const handleRecontact = () => {
+    // Handle recontact logic
   };
 
-  const handleReminder = (leadId: string) => {
-    console.log(`Creando recordatorio para el lead: ${leadId}`);
+  const handleReminder = () => {
+    // Handle reminder logic
   };
 
   const getStateColor = (state: string) => {
@@ -204,7 +172,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                     <Tooltip.Root delayDuration={200}>
                                       <Tooltip.Trigger asChild>
                                         <span>
-                                          <Badge className={cn("text-xs px-2 py-0.5 cursor-help", getStateColor(procedure.state))}>
+                                          <Badge className={cn("text-xs px-2 py-0.5 text-black font-medium cursor-help", getStateColor(procedure.state))}>
                                             {procedure.state.toUpperCase()}
                                           </Badge>
                                         </span>
@@ -218,11 +186,6 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                 {procedure.precio && (
                                   <div className="text-sm font-semibold mt-0.5 flex items-center gap-1" style={{ color: COLOR_TURQUESA }}>
                                     <span>💵</span> {formatPrice(procedure.precio)}
-                                  </div>
-                                )}
-                                {procedure.package_name && procedure.package_name !== "N/A" && (
-                                  <div className="text-sm text-gray-500 mt-0.5">
-                                    📦 {procedure.package_name} 
                                   </div>
                                 )}
                               </div>
@@ -242,7 +205,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                 <span>
                                   <Switch
                                     checked={lead.isBotActive}
-                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.clientPhone)}
+                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.phone)}
                                     className={cn(
                                       "w-12 h-7 border-2 transition-all duration-200",
                                       lead.isBotActive ? '' : ''
@@ -280,7 +243,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    onClick={() => handleRecontact(lead.id)}
+                                    onClick={() => handleRecontact()}
                                     className="h-9 w-9 p-0"
                                     style={{ borderColor: COLOR_TURQUESA }}
                                     title="Recontactar"
@@ -299,7 +262,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    onClick={() => handleReminder(lead.id)}
+                                    onClick={() => handleReminder()}
                                     className="h-9 w-9 p-0"
                                     style={{ borderColor: COLOR_AZUL_OSCURO }}
                                     title="Recordatorio"

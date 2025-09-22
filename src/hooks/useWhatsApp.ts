@@ -83,10 +83,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Listener para estado
     const statusListener = (data: WhatsAppStatusData) => {
-      console.log(`📊 Status received for ${phoneNumber}:`, data);
-      
       if (data.error === 'QR_BLOCKED') {
-        console.log(`🚫 QR blocked for ${phoneNumber}, clearing QR and showing error`);
         updateState({
           isReady: false,
           qrCode: null, // Forzar limpiar el QR
@@ -97,7 +94,6 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
           isLoading: false,
         });
       } else if (data.error === 'CONNECTION_FAILURE') {
-        console.log(`🔄 Connection failure for ${phoneNumber}, waiting for auto-reconnect...`);
         updateState({
           isReady: false,
           qrCode: null,
@@ -129,7 +125,6 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Listener para solicitud de nuevo QR desde el backend
     const requestQrListener = (data: RequestNewQrData) => {
-      console.log(`📡 Received requestNewQr event for ${phoneNumber}, action: ${data.action}`);
       
       if (data.action === 'reconnected') {
         updateState({
@@ -195,14 +190,21 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const result = await response.json();
+      console.log('✅ Reconnect request successful:', result);
+      
+      // No actualizar estado aquí, esperar eventos de socket del backend
+      
     } catch (error) {
+      console.error('❌ Reconnect error:', error);
       updateState({
         error: `Error al reconectar: ${error instanceof Error ? error.message : 'Error desconocido'}`,
         isBlocked: true,
         isLoading: false,
       });
     }
-  }, [phoneNumber, updateState, state.isBlocked]);
+  }, [phoneNumber, updateState]);
 
   return {
     state,

@@ -3,7 +3,6 @@ export type Procedure = {
   name: string;
   precio: string;
   state: string;
-  package_name: string;
 }
 
 export type LeadTable = {

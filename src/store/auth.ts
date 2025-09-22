@@ -9,6 +9,7 @@ type AuthState = {
     user: User | null;
     login: (credentials: Credentials) => void;
     logout: () => void;
+    clearError: () => void;
     isLoading: boolean;
     error: string | null;
 }
@@ -45,6 +46,9 @@ export const useAuthStore = create<AuthState>()(
                     set({ isAuthenticated: false, user: null })
                     localStorage.removeItem('token')
                     redirect('/auth')
+                },
+                clearError: () => {
+                    set({ error: null })
                 }, 
 
             }),

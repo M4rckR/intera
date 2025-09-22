@@ -82,7 +82,6 @@ export const useStatusStore = create<StatusState>()(
         ),
       updateBotStatus: (leadId: string, isActive: boolean) => {
         if (socket?.connected) {
-          console.log(`🤖 Actualizando bot status para lead ${leadId}: ${isActive}`);
           socket.emit('update-bot-status', { id: leadId, is_bot_active: isActive });
         }
       },
@@ -124,7 +123,6 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento cuando se conecta exitosamente
         socketInstance.on("connect", () => {
-          console.log('🔌 Socket conectado');
           reconnectAttempts = 0;
           set(
             { 
@@ -138,8 +136,7 @@ export const useStatusStore = create<StatusState>()(
         });
 
         // Evento cuando hay un error de conexión
-        socketInstance.on("connect_error", (error) => {
-          console.error('❌ Error de conexión:', error);
+        socketInstance.on("connect_error", () => {
           reconnectAttempts++;
           
           if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
@@ -169,7 +166,6 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento para el estado de WhatsApp
         socketInstance.on("whatsappStatus", (data) => {
-          console.log('📱 WhatsApp status actualizado:', data);
           const now = Date.now();
           set(
             { 
@@ -185,12 +181,8 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento para los datos de leads
         socketInstance.on("leads-data", (backendLeads: LeadFromBackend[]) => {
-          console.log('📋 Datos originales del backend:', backendLeads);
-          
           // Convertir los datos aplanados a estructura anidada
           const convertedLeads = backendLeads.map(convertBackendLeadToFrontend);
-          
-          console.log('📋✅ Leads convertidos para frontend:', convertedLeads);
           
           set(
             { 
@@ -204,7 +196,6 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento para las estadísticas
         socketInstance.on("stats-data", (stats: Stats) => {
-          console.log('📊 Stats actualizadas:', stats);
           set(
             { 
               stats,
@@ -216,13 +207,12 @@ export const useStatusStore = create<StatusState>()(
         });
 
         // Evento de reconexión
-        socketInstance.on("reconnect_attempt", (attemptNumber) => {
-          console.log(`🔄 Intento de reconexión ${attemptNumber}`);
+        socketInstance.on("reconnect_attempt", () => {
+          // Handle reconnection attempt
         });
 
         // Evento de reconexión exitosa
-        socketInstance.on("reconnect", (attemptNumber) => {
-          console.log(`✅ Reconectado después de ${attemptNumber} intentos`);
+        socketInstance.on("reconnect", () => {
           set(
             { 
               isLoading: false,
@@ -235,7 +225,6 @@ export const useStatusStore = create<StatusState>()(
 
         // Evento de reconexión fallida
         socketInstance.on("reconnect_failed", () => {
-          console.log('❌ Falló la reconexión');
           set(
             { 
               isLoading: false,

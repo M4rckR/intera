@@ -90,12 +90,22 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
               </svg>
             </div>
             <p className="text-red-600 text-sm mb-4">{state.error}</p>
-            <button
-              onClick={requestNewQr}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              {state.isBlocked ? 'Solicitar Nuevo QR' : 'Reintentar'}
-            </button>
+            {/* Solo mostrar botón para errores que requieren intervención manual */}
+            {(state.errorType === 'QR_BLOCKED' || state.isBlocked) && (
+              <button
+                onClick={requestNewQr}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Solicitar Nuevo QR
+              </button>
+            )}
+            {/* Para otros errores, mostrar mensaje informativo */}
+            {state.errorType !== 'QR_BLOCKED' && !state.isBlocked && (
+              <div className="text-xs text-gray-500 text-center">
+                <p>El sistema intentará reconectar automáticamente</p>
+                <p>Si el problema persiste, contacta al administrador</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -130,17 +140,14 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
         {!state.isReady && !state.error && !state.isLoading && state.isQrEmpty && (
           <div className="h-48 flex flex-col items-center justify-center">
             <div className="text-gray-400 mb-4">
-              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-12 h-12 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
               </svg>
             </div>
             <p className="text-gray-500 text-sm mb-4">Esperando código QR...</p>
-            <button
-              onClick={requestNewQr}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-            >
-              Solicitar QR
-            </button>
+            <div className="text-xs text-gray-400">
+              El sistema está generando el código QR automáticamente
+            </div>
           </div>
         )}
       </div>

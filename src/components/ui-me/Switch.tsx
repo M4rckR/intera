@@ -2,7 +2,7 @@
 export const Switch = () => {
 
   const handleChecked = ( ) => {
-    console.log('Switch toggled');
+    // Handle switch toggle
   }
 
   return (

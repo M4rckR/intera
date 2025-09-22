@@ -12,7 +12,6 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.error('API Client Error:', error);
         if (error.response?.status === 401) {
             // Solo ejecutar en el cliente, no en el servidor
             if (typeof window !== 'undefined') {

@@ -37,15 +37,17 @@ class SocketManager {
     });
 
     this.socket.on('disconnect', () => {
+      // Handle disconnect if needed
     });
 
     this.socket.on('connect_error', () => {
       this.reconnectAttempts++;
       
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('Max reconnection attempts reached');
+        // Max reconnection attempts reached
       }
     });
+
   }
 
   getSocket(): Socket | null {
