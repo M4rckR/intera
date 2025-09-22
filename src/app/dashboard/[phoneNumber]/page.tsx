@@ -29,6 +29,9 @@ export default function DashboardPhonePage() {
     if (!phoneNumber) {
       return;
     }
+    console.log('📡 Joining room ->', { phoneNumber, socketId: socket.id, connected: socket.connected });
+    socket.emit('join', { phoneNumber });
+    console.log('📡 Emitting getLeads ->', { phoneNumber, connected: socket.connected, socketId: socket.id });
     socket.emit('getLeads', { phoneNumber });
   }, [phoneNumber]);
 
