@@ -2,12 +2,18 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/app/components/ui/table";
 import { useAuthStore } from "@/store/auth";
 import { Switch } from "@/app/components/ui-me/Switch";
-import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { MessageSquareReply, BellRing, User} from "lucide-react";
+import { User} from "lucide-react";
 import { cn } from "@/lib/utils";
 import * as Tooltip from '@radix-ui/react-tooltip';
+import { ActionsBar } from '@/app/components/ActionsBar';
+import { useState } from 'react';
+import { ScheduleModal } from '@/app/components/ScheduleModal';
+import { fakeSchedule } from '@/services/mockScheduler';
+import { RejectModal } from '@/app/components/modals/RejectModal';
+import { fakeReject } from '@/services/mockScheduler';
+import { EditPhoneModal } from '@/app/components/modals/EditPhoneModal';
 
 import { LeadsTableProps } from '@/types/components';
 import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
@@ -16,8 +22,15 @@ import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 const COLOR_TURQUESA = '#00CFC3';
 const COLOR_AZUL_OSCURO = '#00405A';
 
-export function LeadsTable({ leads }: LeadsTableProps) {
-  
+export function BotLeadsTable({ leads }: LeadsTableProps) {
+  const [open, setOpen] = useState(false);
+  const [leadId, setLeadId] = useState<string>('');
+  const [leadName, setLeadName] = useState<string>('');
+  const [leadDoc, setLeadDoc] = useState<string>('');
+  const [leadPhone, setLeadPhone] = useState<string>('');
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [editPhoneOpen, setEditPhoneOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<any>(null);
   
   const user = useAuthStore((state) => state.user);
   const roles = user?.roles || {};
@@ -58,13 +71,14 @@ export function LeadsTable({ leads }: LeadsTableProps) {
     }
   };
 
-  const handleRecontact = () => {
-    // Handle recontact logic
+  const handleSchedule = (lead: any) => {
+    setLeadId(lead.id);
+    setLeadName(lead.name);
+    setLeadDoc((lead as any).document || '');
+    setLeadPhone(lead.clientPhone || '');
+    setOpen(true);
   };
-
-  const handleReminder = () => {
-    // Handle reminder logic
-  };
+  const handleReject = (lead: any) => { setSelectedLead(lead); setRejectOpen(true); };
 
   const getStateColor = (state: string) => {
     switch (state.toLowerCase()) {
@@ -133,7 +147,9 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <div className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>{lead.name}</div>
-                          <div className="text-sm text-gray-500">Cliente: {lead.clientPhone}</div>
+                          <div className="text-sm text-gray-500 flex items-center gap-2">Cliente: {lead.clientPhone}
+                            <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as any); setEditPhoneOpen(true); }}>Editar</button>
+                          </div>
                         </div>
                       </TableCell>
 
@@ -236,46 +252,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       {/* Acciones */}
                       {canSeeActions && (
                         <TableCell className="py-4">
-                          <div className="flex gap-2">
-                            <Tooltip.Root delayDuration={200}>
-                              <Tooltip.Trigger asChild>
-                                <span>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => handleRecontact()}
-                                    className="h-9 w-9 p-0"
-                                    style={{ borderColor: COLOR_TURQUESA }}
-                                    title="Recontactar"
-                                  >
-                                    <MessageSquareReply className="w-5 h-5" style={{ color: COLOR_TURQUESA }} />
-                                  </Button>
-                                </span>
-                              </Tooltip.Trigger>
-                              <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
-                                Recontactar: Volver a contactar al paciente
-                              </Tooltip.Content>
-                            </Tooltip.Root>
-                            <Tooltip.Root delayDuration={200}>
-                              <Tooltip.Trigger asChild>
-                                <span>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => handleReminder()}
-                                    className="h-9 w-9 p-0"
-                                    style={{ borderColor: COLOR_AZUL_OSCURO }}
-                                    title="Recordatorio"
-                                  >
-                                    <BellRing className="w-5 h-5" style={{ color: COLOR_AZUL_OSCURO }} />
-                                  </Button>
-                                </span>
-                              </Tooltip.Trigger>
-                              <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
-                                Recordatorio: Crear un recordatorio para este lead
-                              </Tooltip.Content>
-                            </Tooltip.Root>
-                          </div>
+                          <ActionsBar onSchedule={() => handleSchedule(lead)} onReject={() => handleReject(lead)} />
                         </TableCell>
                       )}
                     </TableRow>
@@ -298,6 +275,31 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           <p className="text-sm text-gray-500 text-center">Lista de leads del día</p>
         </div>
       </div>
+      <ScheduleModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        leadId={leadId}
+        patientName={leadName}
+        patientDocument={leadDoc}
+        patientPhone={leadPhone}
+        onConfirm={async (payload) => {
+          if (!leadId) return;
+          await fakeSchedule(leadId, payload);
+        }}
+      />
+
+      <RejectModal
+        open={rejectOpen}
+        onClose={() => setRejectOpen(false)}
+        lead={selectedLead}
+        onConfirm={async (payload) => {
+          if (!selectedLead) return;
+          await fakeReject(selectedLead.id, payload);
+          setRejectOpen(false);
+        }}
+      />
+
+      <EditPhoneModal open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)} lead={selectedLead} />
     </Tooltip.Provider>
   );
 }
