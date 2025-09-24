@@ -7,6 +7,7 @@ import { ActionsBar } from '@/app/components/ActionsBar';
 import { ScheduleModal } from '@/app/components/ScheduleModal';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { useLeadsStore } from '@/store/leads';
 import { RejectModal } from '@/app/components/modals/RejectModal';
 import { fakeReject } from '@/services/mockScheduler';
 import { fakeSchedule } from '@/services/mockScheduler';
@@ -60,6 +61,13 @@ function computeCountdown(createdAt?: string | null): string {
   return `${sign}${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+function isContinuador(lead: any): boolean {
+  const type = (lead?.clientType || '').toString().toLowerCase();
+  if (type === 'continuador') return true;
+  if (lead?.isContinuador === true) return true;
+  return false;
+}
+
 export function ManagerLeadsTable({ leads }: LeadsTableProps) {
   // Placeholder: asumimos que el socket ya filtra por room y trae campos compatibles
   // Campos esperados (si faltan, se muestran como N/A):
@@ -93,7 +101,8 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       createdAtLead: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Ayer
       lastAppointmentAt: new Date().toISOString(), // Hoy
       scheduledAppointmentAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // En 2 días
-      conversationState: 'CONTACTADO'
+      conversationState: 'CONTACTADO',
+      clientType: 'CONTINUADOR'
     },
     {
       id: '3',
@@ -115,7 +124,8 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       createdAtLead: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // Hace 3 días
       lastAppointmentAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
       scheduledAppointmentAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // En 4 días
-      conversationState: 'NO_CONTACTADO'
+      conversationState: 'NO_CONTACTADO',
+      isContinuador: true
     },
     {
       id: '5',
@@ -130,10 +140,16 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
     }
   ];
 
-  // Usar datos fake si no hay leads reales
-  const displayLeads = leads.length > 0 ? leads : fakeLeads;
-
-  // Evitar error de hidratación
+  // Usar store como fuente de verdad; si está vacío, precargar con fake una sola vez
+  const storeLeads = useLeadsStore((s) => s.leads);
+  const setLeads = useLeadsStore((s) => s.setLeads);
+  useEffect(() => {
+    if (storeLeads.length === 0) {
+      setLeads(fakeLeads as any);
+    }
+  }, []);
+  const displayLeads = (storeLeads.length > 0 ? (storeLeads as any[]) : (leads.length > 0 ? (leads as any[]) : fakeLeads));
+  
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -195,7 +211,22 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4">
                         <div className="space-y-1">
                           <div className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>{lead.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center gap-2">Cliente: {lead.clientPhone}
+                      <div className="text-sm text-gray-500 flex items-center gap-2">
+                        {isContinuador(lead) && (
+                          <Tooltip.Root delayDuration={200}>
+                            <Tooltip.Trigger asChild>
+                              <span aria-label="Continuador" title="Continuador" className="inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-yellow-500 fill-current">
+                                  <path d="M12 2l2.9 5.88L21 9.75l-4.5 4.39L17.8 21 12 17.77 6.2 21l1.3-6.86L3 9.75l6.1-.87L12 2z" />
+                                </svg>
+                              </span>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
+                              Cliente continuador
+                            </Tooltip.Content>
+                          </Tooltip.Root>
+                        )}
+                        <span>Teléfono: {lead.clientPhone}</span>
                             <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as any); setEditPhoneOpen(true); }}>Editar</button>
                           </div>
                         </div>

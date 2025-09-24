@@ -1,7 +1,7 @@
 'use client'
 import * as Dialog from '@radix-ui/react-dialog';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Lead } from '@/types/leads';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,13 @@ export function EditPhoneModal({ open, onClose, lead }: Props) {
     onClose();
   }
 
+  // Sincronizar el input al abrir o cuando cambie el lead seleccionado
+  useEffect(() => {
+    if (open) {
+      setPhone(lead?.clientPhone || '');
+    }
+  }, [open, lead?.id]);
+
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
@@ -33,6 +40,7 @@ export function EditPhoneModal({ open, onClose, lead }: Props) {
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-xl w-[90vw] max-w-md p-4">
           <VisuallyHidden.Root>
             <Dialog.Title>Editar teléfono</Dialog.Title>
+            <Dialog.Description>Actualiza el número de teléfono del lead seleccionado</Dialog.Description>
           </VisuallyHidden.Root>
           <div className="space-y-3">
             <Label htmlFor="newPhone">Nuevo teléfono (9 dígitos)</Label>
