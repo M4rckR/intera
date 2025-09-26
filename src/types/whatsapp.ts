@@ -8,6 +8,7 @@ export interface WhatsAppState {
   errorType: string | null; // Tipo de error: 'QR_BLOCKED', 'CONNECTION_FAILURE', etc.
   isBlocked: boolean;
   lastUpdate: Date | null;
+  showRetryButton: boolean;
 }
 
 // Tipos para el hook useWhatsApp

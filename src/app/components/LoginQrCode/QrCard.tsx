@@ -145,9 +145,17 @@ export const QrCard: React.FC<QrCardProps> = ({ phoneNumber, onGoToDashboard }) 
               </svg>
             </div>
             <p className="text-gray-500 text-sm mb-4">Esperando código QR...</p>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 mb-4">
               El sistema está generando el código QR automáticamente
             </div>
+            {state.showRetryButton && (
+              <button
+                onClick={requestNewQr}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
+              >
+                Solicitar Nuevo QR
+              </button>
+            )}
           </div>
         )}
       </div>

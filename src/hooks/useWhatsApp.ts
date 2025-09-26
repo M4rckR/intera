@@ -14,11 +14,13 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
     errorType: null,
     isBlocked: false,
     lastUpdate: null,
+    showRetryButton: false,
   });
 
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const requestTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Función para actualizar estado de manera segura
   const updateState = useCallback((updates: Partial<WhatsAppState>) => {
@@ -42,7 +44,12 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
     requestTimeoutRef.current = setTimeout(() => {
       if (socketRef.current) {
         socketRef.current.emit('getWhatsappStatus', { phoneNumber });
-        updateState({ isLoading: true });
+        updateState({ isLoading: true, showRetryButton: false });
+        
+        // Iniciar timer de 5 segundos para mostrar botón de retry
+        retryButtonTimeoutRef.current = setTimeout(() => {
+          updateState({ showRetryButton: true });
+        }, 5000);
       }
     }, 1000);
   }, [phoneNumber, updateState]);
@@ -71,6 +78,12 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
 
     // Listener para QR
     const qrListener = (qr: string | null) => {
+      // Limpiar timeout del botón de retry si llega QR
+      if (retryButtonTimeoutRef.current) {
+        clearTimeout(retryButtonTimeoutRef.current);
+        retryButtonTimeoutRef.current = null;
+      }
+      
       // Siempre actualizar el estado del QR, incluso si está bloqueado
       updateState({
         qrCode: qr,
@@ -78,6 +91,7 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
         error: null,
         errorType: null,
         isLoading: false,
+        showRetryButton: false, // Ocultar botón si llega QR
       });
     };
 
@@ -164,6 +178,9 @@ export const useWhatsApp = (phoneNumber: string): UseWhatsAppReturn => {
       
       if (requestTimeoutRef.current) {
         clearTimeout(requestTimeoutRef.current);
+      }
+      if (retryButtonTimeoutRef.current) {
+        clearTimeout(retryButtonTimeoutRef.current);
       }
     };
   }, [phoneNumber, state.isBlocked, updateState, requestStatus]);
