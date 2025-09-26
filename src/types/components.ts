@@ -16,6 +16,13 @@ export type LeadTable = {
   time: string;
   procedures: Procedure[];
   isBotActive: boolean;
+  document?: string;
+  clientType?: string;
+  isContinuador?: boolean;
+  createdAtLead?: string;
+  lastAppointmentAt?: string;
+  scheduledAppointmentAt?: string;
+  conversationState?: string;
 }
 
 export type LeadsTableProps = {

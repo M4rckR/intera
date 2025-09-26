@@ -25,7 +25,7 @@ export const useLeadsStore = create<LeadsState>((set) => ({
           : l
       ),
     })),
-  markRejected: (leadId, _payload) =>
+  markRejected: (leadId) =>
     set((state) => ({
       leads: state.leads.map((l) =>
         l.id === leadId

@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -98,11 +98,11 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
   }, [isOpen, leadId, patientDocument, patientName, patientPhone]);
 
   // Opciones para los dropdowns
-  const timeOptions = [
+  const timeOptions = useMemo(() => [
     '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
     '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
-  ];
+  ], []);
 
   // Helpers de validación fecha/hora
   function getTodayISODate(): string {
@@ -113,10 +113,10 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  function isToday(dateStr: string): boolean {
+  const isToday = useCallback((dateStr: string): boolean => {
     if (!dateStr) return false;
     return dateStr === getTodayISODate();
-  }
+  }, []);
 
   const filteredTimeOptions = useMemo(() => {
     if (!isToday(formData.startDate)) return timeOptions;
@@ -127,7 +127,7 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
       const minutes = hh * 60 + mm;
       return minutes >= currentMinutes;
     });
-  }, [formData.startDate]);
+  }, [formData.startDate, isToday, timeOptions]);
 
   function getShiftForTime(timeHHmm?: string): 'Mañana' | 'Tarde' {
     if (!timeHHmm) {

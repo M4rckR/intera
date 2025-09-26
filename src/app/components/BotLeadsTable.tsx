@@ -15,7 +15,7 @@ import { RejectModal } from '@/app/components/modals/RejectModal';
 import { fakeReject } from '@/services/mockScheduler';
 import { EditPhoneModal } from '@/app/components/modals/EditPhoneModal';
 
-import { LeadsTableProps } from '@/types/components';
+import { LeadsTableProps, LeadTable } from '@/types/components';
 import { buildApiUrl, BACKEND_CONFIG } from '@/lib/config';
 
 // Paleta de colores del logo
@@ -30,7 +30,7 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
   const [leadPhone, setLeadPhone] = useState<string>('');
   const [rejectOpen, setRejectOpen] = useState(false);
   const [editPhoneOpen, setEditPhoneOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<LeadTable | null>(null);
   
   const user = useAuthStore((state) => state.user);
   const roles = user?.roles || {};
@@ -73,14 +73,14 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
     }
   };
 
-  const handleSchedule = (lead: any) => {
+  const handleSchedule = (lead: LeadTable) => {
     setLeadId(lead.id);
     setLeadName(lead.name);
-    setLeadDoc((lead as any).document || '');
+    setLeadDoc((lead as LeadTable).document || '');
     setLeadPhone(lead.clientPhone || '');
     setOpen(true);
   };
-  const handleReject = (lead: any) => { setSelectedLead(lead); setRejectOpen(true); };
+  const handleReject = (lead: LeadTable) => { setSelectedLead(lead); setRejectOpen(true); };
 
   const getStateColor = (state: string) => {
     switch (state.toLowerCase()) {
@@ -150,7 +150,7 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
                         <div className="space-y-1">
                           <div className="font-semibold" style={{ color: COLOR_AZUL_OSCURO }}>{lead.name}</div>
                           <div className="text-sm text-gray-500 flex items-center gap-2">Cliente: {lead.clientPhone}
-                            <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as any); setEditPhoneOpen(true); }}>Editar</button>
+                            <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as LeadTable); setEditPhoneOpen(true); }}>Editar</button>
                           </div>
                         </div>
                       </TableCell>
@@ -293,7 +293,8 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
       <RejectModal
         open={rejectOpen}
         onClose={() => setRejectOpen(false)}
-        lead={selectedLead}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lead={selectedLead as any}
         onConfirm={async (payload) => {
           if (!selectedLead) return;
           await fakeReject(selectedLead.id, payload);
@@ -301,7 +302,9 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
         }}
       />
 
-      <EditPhoneModal open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)} lead={selectedLead} />
+      <EditPhoneModal open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)} 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lead={selectedLead as any} />
     </Tooltip.Provider>
   );
 }

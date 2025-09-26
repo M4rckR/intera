@@ -54,8 +54,10 @@ export function RejectModal({ open, onClose, lead, onConfirm }: Props) {
 
   function currentNodes(): Array<string | Record<string, string[]>> {
     // Navega por path dentro de reasonsLevel para obtener el nivel actual
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let nodes: any = reasonsLevel;
     for (const key of path) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const obj = nodes.find((n: any) => typeof n === 'object' && Object.keys(n)[0] === key);
       nodes = obj ? obj[key] : [];
     }

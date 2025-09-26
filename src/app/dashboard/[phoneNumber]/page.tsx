@@ -11,7 +11,8 @@ import { BACKEND_CONFIG } from '@/lib/config';
 import { useLeadsStore } from '@/store/leads';
 
 const USE_SOCKET = process.env.NEXT_PUBLIC_USE_SOCKET !== 'false';
-let socket: any = null as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let socket: any = null;
 if (USE_SOCKET) {
   socket = io(BACKEND_CONFIG.SOCKET_URL, {
     transports: ['websocket', 'polling'],
@@ -29,12 +30,12 @@ export default function DashboardPhonePage() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
-  const storeLeads = useLeadsStore((s) => s.leads) as unknown as LeadTable[];
+  const storeLeads = useLeadsStore((s) => s.leads) as LeadTable[];
 
   useEffect(() => {
     if (!phoneNumber) return;
     if (!USE_SOCKET) {
-      setLeads(storeLeads?.filter?.((l: any) => l?.phone === phoneNumber || l?.clientPhone === phoneNumber) || []);
+      setLeads(storeLeads?.filter?.((l: LeadTable) => l?.phone === phoneNumber || l?.clientPhone === phoneNumber) || []);
       return;
     }
     console.log('📡 Joining room ->', { phoneNumber, socketId: socket?.id, connected: socket?.connected });
@@ -46,7 +47,7 @@ export default function DashboardPhonePage() {
   useEffect(() => {
     if (!USE_SOCKET) return;
     const handleLeads = (leadsData: LeadTable[]) => {
-      const filteredLeads = leadsData.filter((lead: any) => lead.phone === phoneNumber || lead.clientPhone === phoneNumber);
+      const filteredLeads = leadsData.filter((lead: LeadTable) => lead.phone === phoneNumber || lead.clientPhone === phoneNumber);
       setLeads(filteredLeads);
     };
     socket.on('leadsData', handleLeads);
@@ -68,7 +69,7 @@ export default function DashboardPhonePage() {
         <h1 className="text-3xl font-bold mb-2 text-gray-800">Dashboard de {phoneNumber}</h1>
         <p className="text-gray-500 mb-8">Gestiona los leads de este número en tiempo real.</p>
         {(() => {
-          const roles = user?.roles || {} as any;
+          const roles = user?.roles || {};
           // Preferir vista del bot si tiene rol de bot
           if (roles.isAdminBot) {
             return <BotLeadsTable leads={leads} />;

@@ -31,7 +31,7 @@ export function EditPhoneModal({ open, onClose, lead }: Props) {
     if (open) {
       setPhone(lead?.clientPhone || '');
     }
-  }, [open, lead?.id]);
+  }, [open, lead?.id, lead?.clientPhone]);
 
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>

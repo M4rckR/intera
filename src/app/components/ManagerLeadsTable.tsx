@@ -6,14 +6,14 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import { ActionsBar } from '@/app/components/ActionsBar';
 import { ScheduleModal } from '@/app/components/ScheduleModal';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLeadsStore } from '@/store/leads';
 import { RejectModal } from '@/app/components/modals/RejectModal';
 import { fakeReject } from '@/services/mockScheduler';
 import { fakeSchedule } from '@/services/mockScheduler';
 import { EditPhoneModal } from '@/app/components/modals/EditPhoneModal';
 
-import { LeadsTableProps } from '@/types/components';
+import { LeadsTableProps, LeadTable } from '@/types/components';
 
 const COLOR_TURQUESA = '#00CFC3';
 const COLOR_AZUL_OSCURO = '#00405A';
@@ -61,7 +61,7 @@ function computeCountdown(createdAt?: string | null): string {
   return `${sign}${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-function isContinuador(lead: any): boolean {
+function isContinuador(lead: LeadTable): boolean {
   const type = (lead?.clientType || '').toString().toLowerCase();
   if (type === 'continuador') return true;
   if (lead?.isContinuador === true) return true;
@@ -74,13 +74,13 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
   // createdAtLead, sede, lastAppointmentAt, scheduledAppointmentAt, conversationState
 
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<LeadTable | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [editPhoneOpen, setEditPhoneOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   // Datos fake para muestra con fechas actuales
-  const fakeLeads = [
+  const fakeLeads = useMemo(() => [
     {
       id: '1',
       name: 'MARÍA GONZÁLEZ RODRÍGUEZ',
@@ -138,17 +138,18 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       scheduledAppointmentAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // En 5 días
       conversationState: 'ATENDIDO'
     }
-  ];
+  ], []);
 
   // Usar store como fuente de verdad; si está vacío, precargar con fake una sola vez
   const storeLeads = useLeadsStore((s) => s.leads);
   const setLeads = useLeadsStore((s) => s.setLeads);
   useEffect(() => {
     if (storeLeads.length === 0) {
-      setLeads(fakeLeads as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setLeads(fakeLeads as unknown as any[]);
     }
-  }, []);
-  const displayLeads = (storeLeads.length > 0 ? (storeLeads as any[]) : (leads.length > 0 ? (leads as any[]) : fakeLeads));
+  }, [setLeads, storeLeads.length, fakeLeads]);
+  const displayLeads = (storeLeads.length > 0 ? (storeLeads as LeadTable[]) : (leads.length > 0 ? (leads as LeadTable[]) : fakeLeads as unknown as LeadTable[]));
   
   useEffect(() => {
     setIsClient(true);
@@ -156,13 +157,13 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
 
   const handleSchedule = (leadId: string) => {
     const lead = displayLeads.find(l => l.id === leadId);
-    setSelectedLead(lead);
+    setSelectedLead(lead as LeadTable);
     setScheduleModalOpen(true);
   };
 
   const handleReject = (leadId: string) => {
     const lead = displayLeads.find(l => l.id === leadId);
-    setSelectedLead(lead);
+    setSelectedLead(lead as LeadTable);
     setRejectOpen(true);
   };
 
@@ -227,7 +228,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                           </Tooltip.Root>
                         )}
                         <span>Teléfono: {lead.clientPhone}</span>
-                            <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as any); setEditPhoneOpen(true); }}>Editar</button>
+                            <button className="text-blue-600 underline" onClick={() => { setSelectedLead(lead as LeadTable); setEditPhoneOpen(true); }}>Editar</button>
                           </div>
                         </div>
                       </TableCell>
@@ -236,10 +237,10 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4 text-center">
                         <Tooltip.Root delayDuration={200}>
                           <Tooltip.Trigger asChild>
-                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as any).createdAtLead)}</span>
+                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as LeadTable & { createdAtLead?: string }).createdAtLead)}</span>
                           </Tooltip.Trigger>
                           <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
-                            {(lead as any).createdAtLead || 'N/A'}
+                            {(lead as LeadTable & { createdAtLead?: string }).createdAtLead || 'N/A'}
                           </Tooltip.Content>
                         </Tooltip.Root>
                       </TableCell>
@@ -253,10 +254,10 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4 text-center">
                         <Tooltip.Root delayDuration={200}>
                           <Tooltip.Trigger asChild>
-                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as any).lastAppointmentAt)}</span>
+                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as LeadTable & { lastAppointmentAt?: string }).lastAppointmentAt)}</span>
                           </Tooltip.Trigger>
                           <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
-                            {(lead as any).lastAppointmentAt || 'N/A'}
+                            {(lead as LeadTable & { lastAppointmentAt?: string }).lastAppointmentAt || 'N/A'}
                           </Tooltip.Content>
                         </Tooltip.Root>
                       </TableCell>
@@ -265,10 +266,10 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4 text-center">
                         <Tooltip.Root delayDuration={200}>
                           <Tooltip.Trigger asChild>
-                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as any).scheduledAppointmentAt)}</span>
+                            <span className="text-sm text-gray-700 cursor-help">{formatDateTime((lead as LeadTable & { scheduledAppointmentAt?: string }).scheduledAppointmentAt)}</span>
                           </Tooltip.Trigger>
                           <Tooltip.Content side="top" className="z-50 bg-gray-900 text-white px-2 py-1 rounded shadow">
-                            {(lead as any).scheduledAppointmentAt || 'N/A'}
+                            {(lead as LeadTable & { scheduledAppointmentAt?: string }).scheduledAppointmentAt || 'N/A'}
                           </Tooltip.Content>
                         </Tooltip.Root>
                       </TableCell>
@@ -277,9 +278,9 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
                       <TableCell className="py-4 text-center">
                         {isClient ? (
                           <span className={cn('text-sm font-mono', {
-                            'text-red-600': computeCountdown((lead as any).createdAtLead).startsWith('-'),
-                            'text-gray-700': !computeCountdown((lead as any).createdAtLead).startsWith('-')
-                          })}>{computeCountdown((lead as any).createdAtLead)}</span>
+                            'text-red-600': computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead).startsWith('-'),
+                            'text-gray-700': !computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead).startsWith('-')
+                          })}>{computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead)}</span>
                         ) : (
                           <span className="text-sm font-mono text-gray-700">Calculando...</span>
                         )}
@@ -295,8 +296,8 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
 
                       {/* Estado conversación */}
                       <TableCell className="py-4 text-center">
-                        <Badge className={cn('text-xs px-2 py-0.5 border', getConversationBadge((lead as any).conversationState))}>
-                          {((lead as any).conversationState || 'NUEVO').toString().toUpperCase()}
+                        <Badge className={cn('text-xs px-2 py-0.5 border', getConversationBadge((lead as LeadTable & { conversationState?: string }).conversationState))}>
+                          {((lead as LeadTable & { conversationState?: string }).conversationState || 'NUEVO').toString().toUpperCase()}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -333,7 +334,8 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       <RejectModal
         open={rejectOpen}
         onClose={() => setRejectOpen(false)}
-        lead={selectedLead}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lead={selectedLead as any}
         onConfirm={async (payload) => {
           if (!selectedLead) return;
           await fakeReject(selectedLead.id, payload);
@@ -341,7 +343,9 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
         }}
       />
 
-      <EditPhoneModal open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)} lead={selectedLead} />
+      <EditPhoneModal open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)} 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lead={selectedLead as any} />
     </Tooltip.Provider>
   );
 }
