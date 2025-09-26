@@ -19,6 +19,7 @@ interface ScheduleModalProps {
   patientName?: string;
   patientDocument?: string;
   patientPhone?: string;
+  canReschedule?: boolean;
   onConfirm?: (payload: {
     startDate: string;
     startTime: string;
@@ -43,7 +44,7 @@ interface ServiceItem {
   hora: string;
 }
 
-export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patientDocument = '', patientPhone = '', onConfirm }: ScheduleModalProps) {
+export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patientDocument = '', patientPhone = '', canReschedule = false, onConfirm }: ScheduleModalProps) {
   const [formData, setFormData] = useState({
     // Información del paciente
     documentNumber: patientDocument || '',
@@ -70,6 +71,7 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
 
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [invalidField, setInvalidField] = useState<string | null>(null);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
   // Sincronizar datos del lead al abrir/cambiar selección
   React.useEffect(() => {
@@ -200,13 +202,16 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
     'Paciente de emergencia'
   ];
 
-  const tipificacionVentaOptions = [
-    'Venta directa',
-    'Consulta informativa',
-    'Seguimiento',
-    'Reagendamiento',
-    'Cancelación',
-    'No interesado'
+  // Tipificación Venta orientada a AGENDO con jerarquía simple
+  const agendoTipificacion = [
+    {
+      group: 'AGENDO > Venta Directa',
+      options: ['Contacto Titular INTERESADO']
+    },
+    {
+      group: 'AGENDO > Venta Tercero',
+      options: ['Agenda Familiar INTERESADO', 'Agenda Amigo INTERESADO']
+    }
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -216,7 +221,7 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
     }));
   };
 
-  const handleAddService = () => {
+  const handleAddOrUpdateService = () => {
     // Validaciones específicas para agregar a la tabla
     if (!formData.especialidad) {
       focusAndToast('especialidad', 'Falta Especialidad');
@@ -236,18 +241,30 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
       return;
     }
     if (formData.especialidad && formData.servicio && formData.monto) {
-      const newService: ServiceItem = {
-        id: Date.now().toString(),
-        servicio: formData.especialidad,
-        procedimiento: formData.servicio,
-        monto: montoNum,
-        turno: getShiftForTime(formData.startTime),
-        hora: formData.startTime || '15:30'
-      };
-      setServices(prev => [...prev, newService]);
-      toast.success('Procedimiento/Paquete agregado');
-      
-      // Limpiar campos de servicio
+      if (editingServiceId) {
+        setServices(prev => prev.map(s => s.id === editingServiceId ? ({
+          ...s,
+          servicio: formData.especialidad,
+          procedimiento: formData.servicio,
+          monto: montoNum,
+          turno: getShiftForTime(formData.startTime),
+          hora: formData.startTime || s.hora
+        }) : s));
+        toast.success('Procedimiento/Paquete actualizado');
+      } else {
+        const newService: ServiceItem = {
+          id: Date.now().toString(),
+          servicio: formData.especialidad,
+          procedimiento: formData.servicio,
+          monto: montoNum,
+          turno: getShiftForTime(formData.startTime),
+          hora: formData.startTime || '15:30'
+        };
+        setServices(prev => [...prev, newService]);
+        toast.success('Procedimiento/Paquete agregado');
+      }
+
+      // Limpiar campos de servicio y estado de edición
       setFormData(prev => ({
         ...prev,
         especialidad: '',
@@ -255,11 +272,31 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
         servicio: '',
         monto: ''
       }));
+      setEditingServiceId(null);
     }
   };
 
   const handleRemoveService = (serviceId: string) => {
     setServices(prev => prev.filter(service => service.id !== serviceId));
+    if (editingServiceId === serviceId) {
+      setEditingServiceId(null);
+    }
+  };
+
+  const handleEditService = (service: ServiceItem) => {
+    // Precargar datos en el formulario para edición
+    setFormData(prev => ({
+      ...prev,
+      especialidad: service.servicio,
+      tipo: prev.tipo, // se mantiene si aplica
+      servicio: service.procedimiento,
+      monto: service.monto.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }),
+      startTime: service.hora
+    }));
+    setEditingServiceId(service.id);
+    // Llevar foco al bloque de servicio
+    const el = document.getElementById('especialidad') as HTMLElement | null;
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   function focusAndToast(fieldId: string, message: string) {
@@ -631,7 +668,24 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
 
             {/* Botón para agregar a la tabla */}
             <div className="flex justify-end">
-              <Button onClick={handleAddService} variant="outline" className="px-4 py-2">Agregar a Procedimiento/Paquete</Button>
+              <div className="flex items-center gap-2">
+                {editingServiceId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="px-3"
+                    onClick={() => {
+                      setEditingServiceId(null);
+                      setFormData(prev => ({ ...prev, especialidad: '', tipo: '', servicio: '', monto: '' }));
+                    }}
+                  >
+                    Cancelar edición
+                  </Button>
+                )}
+                <Button onClick={handleAddOrUpdateService} variant="outline" className="px-4 py-2">
+                  {editingServiceId ? 'Actualizar Procedimiento' : 'Agregar a Procedimiento/Paquete'}
+                </Button>
+              </div>
             </div>
 
             {/* Pauta */}
@@ -676,7 +730,7 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
                           <td className="py-2 px-3 text-sm text-gray-700">{service.hora}</td>
                           <td className="py-2 px-3 text-center">
                             <div className="flex justify-center space-x-2">
-                              <button className="p-1 hover:bg-gray-100 rounded">
+                              <button onClick={() => handleEditService(service)} className="p-1 hover:bg-gray-100 rounded">
                                 <Edit className="w-4 h-4 text-blue-600" />
                               </button>
                               <button 
@@ -740,11 +794,11 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
               </div>
             </div>
 
-            {/* Tipificación Venta - Solo se muestra si hay servicios */}
+            {/* Tipificación Venta (AGENDO) - Sólo si hay servicios */}
             {services.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="tipificacionVenta" className="flex items-center space-x-1 text-sm font-medium">
-                  <span>Tipificación Venta:</span>
+                  <span>Tipificación (AGENDO)</span>
                   <span className="text-red-500">(*)</span>
                 </Label>
                 <select
@@ -754,8 +808,12 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
                   className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${invalidField === 'tipificacionVenta' ? 'border-red-500 ring-2 ring-red-300' : ''}`}
                 >
                   <option value="">Seleccione</option>
-                  {tipificacionVentaOptions.map(tip => (
-                    <option key={tip} value={tip}>{tip}</option>
+                  {agendoTipificacion.map(group => (
+                    <optgroup key={group.group} label={group.group}>
+                      {group.options.map(opt => (
+                        <option key={opt} value={`${group.group} > ${opt}`}>{opt}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>
@@ -770,13 +828,15 @@ export function ScheduleModal({ isOpen, onClose, leadId, patientName = '', patie
               >
                 Eliminar Cita
               </Button>
-              <Button 
-                onClick={handleReschedule}
-                className="px-6 py-2 text-white font-medium"
-                style={{ backgroundColor: '#f59e0b' }}
-              >
-                Reprogramar
-              </Button>
+              {canReschedule && (
+                <Button 
+                  onClick={handleReschedule}
+                  className="px-6 py-2 text-white font-medium"
+                  style={{ backgroundColor: '#f59e0b' }}
+                >
+                  Reprogramar
+                </Button>
+              )}
               <Button 
                 onClick={handleSave}
                 className="px-6 py-2 text-white font-medium"

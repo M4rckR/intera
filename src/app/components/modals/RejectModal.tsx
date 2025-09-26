@@ -23,6 +23,12 @@ export function RejectModal({ open, onClose, lead, onConfirm }: Props) {
   const [finalLabel, setFinalLabel] = useState<string | null>(null);
 
   const categories = useMemo(() => (interest ? Object.keys(REJECT_REASONS[interest]) : []), [interest]);
+  function displayCategory(key: string): string {
+    if (key === 'NO_AGENDO') return 'RECHAZA/NO DESEA';
+    if (key === 'NO_EFECTIVO_NO_CALIFICA') return 'NO EFECTIVO/NO CALIFICA';
+    return key.replace(/_/g, ' ');
+  }
+
 
   const reasonsLevel = useMemo(() => {
     if (!interest || !category) return [] as Array<string | Record<string, string[]>>;
@@ -99,7 +105,7 @@ export function RejectModal({ open, onClose, lead, onConfirm }: Props) {
                 <span className="px-2 py-1 bg-gray-100 rounded">{interest}</span>
               )}
               {category && (
-                <span className="px-2 py-1 bg-gray-100 rounded">{category}</span>
+                <span className="px-2 py-1 bg-gray-100 rounded">{displayCategory(category)}</span>
               )}
               {path.map((p, i) => (
                 <span key={i} className="px-2 py-1 bg-gray-100 rounded">{p}</span>
@@ -122,7 +128,7 @@ export function RejectModal({ open, onClose, lead, onConfirm }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {categories.map((cat) => (
                   <button key={cat} onClick={() => { setCategory(cat); resetFrom(2); }} className="px-4 py-3 rounded border hover:bg-gray-50 text-left" style={{ borderColor: COLOR_TURQUESA }}>
-                    {cat.replace(/_/g, ' ')}
+                    {displayCategory(cat)}
                   </button>
                 ))}
               </div>

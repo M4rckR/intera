@@ -46,10 +46,12 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
       } 
 
       const requestBody = { 
-        userPhone: leadPhone, // Número de teléfono del cliente (lead.phone)
+        userPhone: leadPhone, // Número de teléfono del cliente (lead.clientPhone)
         phoneNumber: userPhone, // Número de teléfono del gestor
         is_bot_active: Boolean(newStatus) // Asegurar que sea boolean
       };
+
+      console.log('Frontend sending:', requestBody);
 
       // Lógica para actualizar el estado del bot por HTTP POST
       const response = await fetch(buildApiUrl(BACKEND_CONFIG.ENDPOINTS.LEADS.UPDATE_BOT_STATUS), {
@@ -221,7 +223,7 @@ export function BotLeadsTable({ leads }: LeadsTableProps) {
                                 <span>
                                   <Switch
                                     checked={lead.isBotActive}
-                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.phone)}
+                                    onCheckedChange={(newStatus) => handleToggleBot(lead.id, newStatus, lead.clientPhone)}
                                     className={cn(
                                       "w-12 h-7 border-2 transition-all duration-200",
                                       lead.isBotActive ? '' : ''
