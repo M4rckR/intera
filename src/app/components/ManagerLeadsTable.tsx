@@ -12,6 +12,7 @@ import { RejectModal } from '@/app/components/modals/RejectModal';
 import { fakeReject } from '@/services/mockScheduler';
 import { fakeSchedule } from '@/services/mockScheduler';
 import { EditPhoneModal } from '@/app/components/modals/EditPhoneModal';
+import { useCountdown } from '@/hooks/useCountdown';
 
 import { LeadsTableProps, LeadTable } from '@/types/components';
 
@@ -45,20 +46,22 @@ function getConversationBadge(state?: string) {
   }
 }
 
-// Cuenta regresiva de 72h desde createdAtLead
-function computeCountdown(createdAt?: string | null): string {
-  if (!createdAt) return 'N/A';
-  const start = new Date(createdAt).getTime();
-  if (Number.isNaN(start)) return 'N/A';
-  const deadline = start + 72 * 60 * 60 * 1000;
-  const diffMs = deadline - Date.now();
-  const sign = diffMs < 0 ? '-' : '';
-  const abs = Math.abs(diffMs);
-  const h = Math.floor(abs / 3600000);
-  const m = Math.floor((abs % 3600000) / 60000);
-  const s = Math.floor((abs % 60000) / 1000);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${sign}${pad(h)}:${pad(m)}:${pad(s)}`;
+// Componente para la celda de cuenta regresiva
+function CountdownCell({ createdAt }: { createdAt?: string | null }) {
+  const countdown = useCountdown(createdAt);
+  
+  if (countdown.timeString === 'N/A') {
+    return <span className="text-sm font-mono text-gray-500">N/A</span>;
+  }
+
+  return (
+    <span className={cn('text-sm font-mono', {
+      'text-red-600': countdown.isExpired,
+      'text-gray-700': !countdown.isExpired
+    })}>
+      {countdown.timeString}
+    </span>
+  );
 }
 
 function isContinuador(lead: LeadTable): boolean {
@@ -87,7 +90,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       clientPhone: '987654321',
       document: '12345678',
       sede: 'Sede Central - Lima',
-      createdAtLead: new Date().toISOString(), // Hoy
+      createdAtLead: '2025-09-27T09:00:00.000Z', // Fecha fija: hace 1 hora (71h restantes)
       lastAppointmentAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Mañana
       scheduledAppointmentAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // En 3 días
       conversationState: 'AGENDADO'
@@ -98,7 +101,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       clientPhone: '987654322',
       document: '23456789',
       sede: 'Sede Norte - San Martín',
-      createdAtLead: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Ayer
+      createdAtLead: '2025-10-28T10:00:00.000Z', // Fecha fija: hace 1 día (48h restantes)
       lastAppointmentAt: new Date().toISOString(), // Hoy
       scheduledAppointmentAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // En 2 días
       conversationState: 'CONTACTADO',
@@ -110,7 +113,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       clientPhone: '987654323',
       document: '34567890',
       sede: 'Sede Sur - Villa El Salvador',
-      createdAtLead: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
+      createdAtLead: '2025-10-29T10:00:00.000Z', // Fecha fija: hace 2 días (24h restantes)
       lastAppointmentAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // Ayer
       scheduledAppointmentAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Mañana
       conversationState: 'NUEVO'
@@ -121,7 +124,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       clientPhone: '987654324',
       document: '45678901',
       sede: 'Sede Este - Ate Vitarte',
-      createdAtLead: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // Hace 3 días
+      createdAtLead: '2025-10-30T08:43:00.000Z', // Fecha fija: hace 72h 17min (EXPIRADO)
       lastAppointmentAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
       scheduledAppointmentAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // En 4 días
       conversationState: 'NO_CONTACTADO',
@@ -133,7 +136,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
       clientPhone: '987654325',
       document: '56789012',
       sede: 'Sede Oeste - Callao',
-      createdAtLead: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // Hace 4 días
+      createdAtLead: '2025-10-31T10:00:00.000Z', // Fecha fija: hace 4 días (EXPIRADO hace 24h)
       lastAppointmentAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // Hace 3 días
       scheduledAppointmentAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // En 5 días
       conversationState: 'ATENDIDO'
@@ -276,14 +279,7 @@ export function ManagerLeadsTable({ leads }: LeadsTableProps) {
 
                       {/* Cuenta regresiva 72h */}
                       <TableCell className="py-4 text-center">
-                        {isClient ? (
-                          <span className={cn('text-sm font-mono', {
-                            'text-red-600': computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead).startsWith('-'),
-                            'text-gray-700': !computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead).startsWith('-')
-                          })}>{computeCountdown((lead as LeadTable & { createdAtLead?: string }).createdAtLead)}</span>
-                        ) : (
-                          <span className="text-sm font-mono text-gray-700">Calculando...</span>
-                        )}
+                        <CountdownCell createdAt={(lead as LeadTable & { createdAtLead?: string }).createdAtLead} />
                       </TableCell>
 
                       {/* Acciones */}
